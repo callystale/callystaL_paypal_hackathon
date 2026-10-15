@@ -1,0 +1,45 @@
+# Render blueprint for the Budget Planner.
+#
+# A persistent disk keeps the SQLite database across deploys. Disks require a
+# paid instance type (Starter or above); swap for a managed Postgres by changing
+# the Prisma datasource provider if you prefer.
+services:
+  - type: web
+    name: budget-planner
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npx prisma db push --skip-generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "20.11.1"
+      - key: DATABASE_URL
+        value: file:/var/data/prod.db
+      # Ollama runs on your machine; point this at a reachable instance for the
+      # hosted demo. Leave unset to use the built-in heuristic planner.
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.2:3b
+      # Channel3 is optional; without a key the fallback catalogue is used.
+      - key: CHANNEL3_API_KEY
+        sync: false
+      - key: CHANNEL3_API_URL
+        value: https://api.trychannel3.com
+      # PayPal Sandbox.
+      - key: PAYPAL_ENV
+        value: sandbox
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CURRENCY
+        value: USD

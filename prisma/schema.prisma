@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A spending category, optionally carrying a budget cap.
+model Category {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  color     String     @default("#6366f1")
+  budget    Float?
+  purchases Purchase[]
+  createdAt DateTime   @default(now())
+}
+
+/// A recorded purchase (manual entry or imported PayPal activity).
+model Purchase {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  merchant    String?
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  /// True when the user hand-corrected the AI category guess.
+  userCategorized Boolean @default(false)
+  aiConfidence    Float?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+/// A thing the user wants to buy, with optional constraints.
+/// SQLite does not support Prisma enums, so priority is a string:
+/// "LOW" | "MEDIUM" | "HIGH".
+model DesiredItem {
+  id          String   @id @default(cuid())
+  name        String
+  notes       String?
+  /// User-provided target price. Used when no cheaper alternative is chosen.
+  targetPrice Float
+  priority    String   @default("MEDIUM")
+  targetDate  DateTime?
+  /// Product link the user pasted in, if any.
+  url         String?
+  category    String?
+  purchased   Boolean  @default(false)
+  /// Set when the user swaps in a cheaper alternative.
+  alternativeName  String?
+  alternativePrice Float?
+  alternativeUrl   String?
+  milestoneId String?
+  milestone   Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+}
+
+/// An AI-generated affordable grouping of desired items.
+model Milestone {
+  id          String        @id @default(cuid())
+  title       String
+  rationale   String?
+  /// Order in the staged plan (1 = do first).
+  sequence    Int           @default(1)
+  status      String        @default("PLANNED")
+  items       DesiredItem[]
+  createdAt   DateTime      @default(now())
+}
+
+/// A PayPal order created for a milestone checkout.
+model Order {
+  id            String   @id @default(cuid())
+  paypalOrderId String   @unique
+  milestoneId   String?
+  milestoneTitle String?
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("CREATED")
+  /// Raw capture response for auditing.
+  captureId     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
