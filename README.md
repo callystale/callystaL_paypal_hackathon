@@ -1,8 +1,8 @@
 # Budget Planner
 
-Set category budgets, record spending, and let a locally-run AI turn your wishlist into
-**affordable milestones**. For each planned item the app finds cheaper alternatives, and when
-you're ready you approve a milestone and pay with **PayPal Sandbox**.
+Set up a monthly budget with AI help, record spending, and let a locally-run AI turn your
+wishlist into **affordable milestones**. For each planned item the app finds cheaper
+alternatives, and when you're ready you approve a milestone and pay with **PayPal Sandbox**.
 
 The AI recommends. You approve. Nothing is ever paid automatically.
 
@@ -12,11 +12,12 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 
 | Step | What happens | Where in the UI |
 | ---- | ------------ | --------------- |
-| 1. Set up a budget | Choose spending categories and set a budget for each — or skip budgets and just track spending. | **Budget** panel |
+| 1. Set up a monthly budget | Enter your monthly take-home income and the categories you care about. The local AI asks a few questions, proposes an amount for each category, and you adjust anything before saving. | **Monthly budget** panel |
 | 2. Add purchases | Record purchases manually. AI categorizes each item and shows spending against the budget. Correct its guesses anytime. | **Purchases** panel |
-| 3. Build a purchase plan | Add desired items with optional priority, target date, or max price. The AI groups them into affordable milestones based on your budget and priorities. | **Desired items** + **AI milestones** |
-| 4. Find lower-cost options | For each planned item, the app searches similar products and compares price, availability, and fit. Swap an item into your plan in one click. | **Find cheaper** → alternatives modal |
-| 5. Pay when ready | Select a milestone, review the total, and approve a PayPal checkout. Items are marked purchased after capture. | **Check out this milestone** |
+| 3. Set up a budget | Choose spending categories and set a budget for each — or skip budgets and just track spending. | **Budget** panel |
+| 4. Build a purchase plan | Add desired items with optional priority, target date, or max price. The AI groups them into affordable milestones based on your budget and priorities. | **Desired items** + **AI milestones** |
+| 5. Find lower-cost options | For each planned item, the app searches similar products and compares price, availability, and fit. Swap an item into your plan in one click. | **Find cheaper** → alternatives modal |
+| 6. Pay when ready | Select a milestone, review the total, and approve a PayPal checkout. Items are marked purchased after capture. | **Check out this milestone** |
 
 ---
 
@@ -128,12 +129,12 @@ spending (60% of the remaining headroom), so plans stay realistic.
 
 ```
 prisma/
-  schema.prisma        Category, Purchase, DesiredItem, Milestone, Order
+  schema.prisma        Settings, Category, Purchase, DesiredItem, Milestone, Order
   seed.ts              Sample data
 src/
   app/
     page.tsx           Dashboard entry
-    api/               Route handlers (budgets, purchases, plan, alternatives, paypal…)
+    api/               Route handlers (settings, budgets, purchases, plan, alternatives, paypal…)
   components/          UI: budget, purchases, wishlist, plan, checkout, modals
   lib/
     ollama.ts          Local model client (JSON mode)

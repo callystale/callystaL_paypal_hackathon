@@ -7,6 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Singleton row (id = "singleton") holding the user's monthly income and the
+/// free-text goals/priorities used to guide the AI budget suggestion.
+model Settings {
+  id        String   @id @default("singleton")
+  salary    Float    @default(0)
+  goals     String?
+  updatedAt DateTime @updatedAt
+}
+
 /// A spending category, optionally carrying a budget cap.
 model Category {
   id        String     @id @default(cuid())

@@ -6,6 +6,7 @@ import {
   type ItemDTO,
   type PlanResponse,
   type PurchaseDTO,
+  type SettingsDTO,
   type StatusDTO,
   type SummaryDTO,
 } from "@/lib/client";
@@ -13,6 +14,7 @@ import {
 export function usePlannerData() {
   const [status, setStatus] = useState<StatusDTO | null>(null);
   const [summary, setSummary] = useState<SummaryDTO | null>(null);
+  const [settings, setSettings] = useState<SettingsDTO | null>(null);
   const [purchases, setPurchases] = useState<PurchaseDTO[]>([]);
   const [items, setItems] = useState<ItemDTO[]>([]);
   const [plan, setPlan] = useState<PlanResponse | null>(null);
@@ -20,15 +22,17 @@ export function usePlannerData() {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const [s, sum, p, i, pl] = await Promise.all([
+    const [s, sum, set, p, i, pl] = await Promise.all([
       api.get<StatusDTO>("/api/status"),
       api.get<SummaryDTO>("/api/summary"),
+      api.get<SettingsDTO>("/api/settings"),
       api.get<PurchaseDTO[]>("/api/purchases"),
       api.get<ItemDTO[]>("/api/items"),
       api.get<PlanResponse>("/api/plan"),
     ]);
     setStatus(s);
     setSummary(sum);
+    setSettings(set);
     setPurchases(p);
     setItems(i);
     setPlan(pl);
@@ -56,6 +60,7 @@ export function usePlannerData() {
   return {
     status,
     summary,
+    settings,
     purchases,
     items,
     plan,

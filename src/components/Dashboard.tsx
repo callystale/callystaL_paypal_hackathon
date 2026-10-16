@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CaptureResponse, ItemDTO, MilestoneDTO } from "@/lib/client";
 import { usePlannerData } from "./usePlannerData";
 import { StatusBar } from "./StatusBar";
+import { IncomePanel } from "./IncomePanel";
 import { BudgetPanel } from "./BudgetPanel";
 import { PurchasesPanel } from "./PurchasesPanel";
 import { WishlistPanel } from "./WishlistPanel";
@@ -13,7 +14,7 @@ import { CheckoutModal } from "./CheckoutModal";
 import { Alert, Money, Spinner } from "./ui";
 
 export function Dashboard() {
-  const { status, summary, purchases, items, plan, loading, error, refresh, run } =
+  const { status, summary, settings, purchases, items, plan, loading, error, refresh, run } =
     usePlannerData();
   const [alternativesFor, setAlternativesFor] = useState<ItemDTO | null>(null);
   const [checkoutFor, setCheckoutFor] = useState<MilestoneDTO | null>(null);
@@ -45,7 +46,7 @@ export function Dashboard() {
           Budget Planner
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-500">
-          Set category budgets, record spending, and let a locally-run AI stage your wishlist
+          Set up your monthly budget, record spending, and let a locally-run AI stage your wishlist
           into affordable milestones. The AI recommends — you approve and pay with PayPal.
         </p>
         <div className="mt-4">
@@ -87,9 +88,13 @@ export function Dashboard() {
         </div>
       )}
 
+      <div className="mb-6">
+        <IncomePanel settings={settings} summary={summary} run={run} />
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
-        <BudgetPanel summary={summary} run={run} />
         <PurchasesPanel purchases={purchases} summary={summary} run={run} />
+        <BudgetPanel summary={summary} run={run} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

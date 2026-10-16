@@ -6,10 +6,19 @@ type Priority = "LOW" | "MEDIUM" | "HIGH";
 
 async function main() {
   await prisma.order.deleteMany();
+  await prisma.settings.deleteMany();
   await prisma.desiredItem.deleteMany();
   await prisma.milestone.deleteMany();
   await prisma.purchase.deleteMany();
   await prisma.category.deleteMany();
+
+  await prisma.settings.create({
+    data: {
+      id: "singleton",
+      salary: 6000,
+      goals: "Keep rent covered, save for a trip, and spend less on takeout.",
+    },
+  });
 
   const groceries = await prisma.category.create({
     data: { name: "Groceries", budget: 600, color: "#22c55e" },
@@ -89,7 +98,7 @@ async function main() {
     });
   }
 
-  console.log("Seeded categories, purchases, and desired items.");
+  console.log("Seeded settings, categories, purchases, and desired items.");
 }
 
 main()

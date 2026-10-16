@@ -32,7 +32,7 @@ export function PlanPanel({
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-            Step 4 · Staged plan
+            Step 5 · Staged plan
           </p>
           <h2 className="text-lg font-semibold">AI milestones</h2>
           {plan && (

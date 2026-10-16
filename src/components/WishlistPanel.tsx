@@ -49,7 +49,7 @@ export function WishlistPanel({
     <section className="card">
       <header className="mb-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-          Step 3 · Purchase plan
+          Step 4 · Purchase plan
         </p>
         <h2 className="text-lg font-semibold">Desired items</h2>
       </header>

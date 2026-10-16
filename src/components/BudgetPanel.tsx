@@ -45,7 +45,7 @@ export function BudgetPanel({
       <header className="mb-4 flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-            Step 1 · Budget
+            Step 3 · Budget
           </p>
           <h2 className="text-lg font-semibold">Categories &amp; spending</h2>
         </div>
