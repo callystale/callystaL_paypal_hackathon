@@ -3,18 +3,18 @@ import { ok, toErrorResponse } from "@/lib/api";
 import { toMilestoneDTO, toPlanItem } from "@/lib/dto";
 import { estimateMonthlyBudget, generatePlan } from "@/lib/planner";
 import { round2 } from "@/lib/money";
+import { getSettings } from "@/lib/settings";
+import { periodStart } from "@/lib/period";
 
 export const dynamic = "force-dynamic";
 
-function startOfMonth(): Date {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
 async function buildContext() {
+  const settings = await getSettings();
   const [categories, purchases] = await Promise.all([
     prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-    prisma.purchase.findMany({ where: { occurredAt: { gte: startOfMonth() } } }),
+    prisma.purchase.findMany({
+      where: { occurredAt: { gte: periodStart(new Date(), settings.monthStartDay) } },
+    }),
   ]);
 
   const planCategories = categories.map((c) => ({

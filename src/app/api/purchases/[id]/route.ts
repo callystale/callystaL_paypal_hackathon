@@ -10,6 +10,7 @@ const updateSchema = z.object({
   amount: z.number().positive().optional(),
   merchant: z.string().max(80).nullable().optional(),
   categoryId: z.string().nullable().optional(),
+  occurredAt: z.string().datetime().optional(),
 });
 
 export async function PATCH(
@@ -27,6 +28,7 @@ export async function PATCH(
         ...(body.categoryId !== undefined
           ? { categoryId: body.categoryId, userCategorized: true }
           : {}),
+        ...(body.occurredAt !== undefined ? { occurredAt: new Date(body.occurredAt) } : {}),
       },
       include: { category: true },
     });

@@ -13,6 +13,9 @@ model Settings {
   id        String   @id @default("singleton")
   salary    Float    @default(0)
   goals     String?
+  /// Day of the month the budget period starts on (1-31). Lets the period
+  /// follow a payday instead of always starting on the 1st.
+  monthStartDay Int  @default(1)
   updatedAt DateTime @updatedAt
 }
 

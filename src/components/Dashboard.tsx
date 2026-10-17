@@ -7,6 +7,7 @@ import { StatusBar } from "./StatusBar";
 import { IncomePanel } from "./IncomePanel";
 import { BudgetPanel } from "./BudgetPanel";
 import { PurchasesPanel } from "./PurchasesPanel";
+import { CalendarPanel } from "./CalendarPanel";
 import { WishlistPanel } from "./WishlistPanel";
 import { PlanPanel } from "./PlanPanel";
 import { AlternativesModal } from "./AlternativesModal";
@@ -75,7 +76,7 @@ export function Dashboard() {
       {summary && (
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat label="Budget" value={<Money amount={summary.totals.budget} currency={currencyCode} />} />
-          <Stat label="Spent this month" value={<Money amount={summary.totals.spent} currency={currencyCode} />} />
+          <Stat label="Spent this period" value={<Money amount={summary.totals.spent} currency={currencyCode} />} />
           <Stat
             label="Remaining"
             value={<Money amount={summary.totals.remaining} currency={currencyCode} />}
@@ -89,21 +90,30 @@ export function Dashboard() {
       )}
 
       <div className="mb-6">
-        <IncomePanel settings={settings} summary={summary} run={run} />
+        <CalendarPanel
+          purchases={purchases}
+          settings={settings}
+          summary={summary}
+          run={run}
+        />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <IncomePanel settings={settings} summary={summary} run={run} />
         <PurchasesPanel purchases={purchases} summary={summary} run={run} />
-        <BudgetPanel summary={summary} run={run} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <BudgetPanel summary={summary} run={run} />
         <WishlistPanel
           items={items}
           summary={summary}
           run={run}
           onFindAlternatives={setAlternativesFor}
         />
+      </div>
+
+      <div className="mt-6">
         <PlanPanel
           plan={plan}
           status={status}

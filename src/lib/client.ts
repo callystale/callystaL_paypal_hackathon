@@ -24,6 +24,7 @@ export interface StatusDTO {
 export interface SummaryDTO {
   currency: string;
   periodStart: string;
+  monthStartDay: number;
   totals: {
     budget: number;
     spent: number;

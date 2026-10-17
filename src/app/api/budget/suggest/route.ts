@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { ok, toErrorResponse } from "@/lib/api";
 import { suggestBudgetSplit } from "@/lib/budget";
 import { round2 } from "@/lib/money";
+import { getSettings } from "@/lib/settings";
+import { periodStart } from "@/lib/period";
 
 export const dynamic = "force-dynamic";
 
@@ -25,19 +27,17 @@ const schema = z.object({
     .max(50),
 });
 
-function startOfMonth(): Date {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
 /** Step 1b: the model splits the income across the listed categories. */
 export async function POST(request: Request) {
   try {
     const body = schema.parse(await request.json());
 
+    const settings = await getSettings();
     const [categories, purchases] = await Promise.all([
       prisma.category.findMany(),
-      prisma.purchase.findMany({ where: { occurredAt: { gte: startOfMonth() } } }),
+      prisma.purchase.findMany({
+        where: { occurredAt: { gte: periodStart(new Date(), settings.monthStartDay) } },
+      }),
     ]);
 
     const nameById = new Map(categories.map((c) => [c.id, c.name]));
