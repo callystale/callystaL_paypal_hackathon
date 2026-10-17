@@ -20,11 +20,21 @@ interface DraftCategory {
   name: string;
   color: string;
   amount: string;
+  // The % input keeps its own text so it can hold partial/empty values while typing.
+  percent?: string;
 }
 
 function newKey(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
   return Math.random().toString(36).slice(2);
+}
+
+/** The percentage text that represents `amount` out of `salary`. */
+function percentFromAmount(amount: string, salary: number): string {
+  if (salary <= 0 || amount === "") return "";
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "";
+  return String(Math.round((n / salary) * 1000) / 10);
 }
 
 export function IncomePanel({
@@ -70,16 +80,27 @@ export function IncomePanel({
     setAnswers({});
     setSuggestion(null);
     setHistory([]);
+    const salaryValue = settings.salary || 0;
     setDraft(
       categories.length > 0
-        ? categories.map((c) => ({
-            key: c.id,
-            id: c.id,
-            name: c.name,
-            color: c.color,
-            amount: c.budget != null ? String(c.budget) : "",
-          }))
-        : STARTER.map((name, i) => ({ key: newKey(), name, color: COLORS[i % COLORS.length], amount: "" })),
+        ? categories.map((c) => {
+            const amount = c.budget != null ? String(c.budget) : "";
+            return {
+              key: c.id,
+              id: c.id,
+              name: c.name,
+              color: c.color,
+              amount,
+              percent: percentFromAmount(amount, salaryValue),
+            };
+          })
+        : STARTER.map((name, i) => ({
+            key: newKey(),
+            name,
+            color: COLORS[i % COLORS.length],
+            amount: "",
+            percent: "",
+          })),
     );
   }, [settings, summary]);
 
@@ -106,19 +127,38 @@ export function IncomePanel({
   const updateRow = (key: string, patch: Partial<DraftCategory>) =>
     setDraft((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
 
-  // Editing the % recomputes the amount from the monthly income.
+  // Editing the amount keeps the % display in sync with it.
+  const changeAmount = (key: string, value: string) => {
+    updateRow(key, { amount: value, percent: percentFromAmount(value, salaryNum) });
+  };
+
+  // Editing the % stores the raw text (so partial input like "12." survives) and
+  // recomputes the amount from the monthly income. Clearing it clears the amount.
   const changePercent = (key: string, value: string) => {
-    if (salaryNum <= 0 || value === "") return;
+    if (salaryNum <= 0) return;
+    if (value === "") {
+      updateRow(key, { percent: "", amount: "" });
+      return;
+    }
     const pct = Number(value);
-    if (!Number.isFinite(pct)) return;
-    const clamped = Math.max(0, Math.min(pct, 100));
-    updateRow(key, { amount: String(round2((salaryNum * clamped) / 100)) });
+    if (!Number.isFinite(pct)) {
+      updateRow(key, { percent: value });
+      return;
+    }
+    updateRow(key, { percent: value, amount: String(round2((salaryNum * pct) / 100)) });
+  };
+
+  // Changing income keeps every % in sync with its (unchanged) amount.
+  const changeSalary = (value: string) => {
+    setSalary(value);
+    const next = Number(value) || 0;
+    setDraft((rows) => rows.map((r) => ({ ...r, percent: percentFromAmount(r.amount, next) })));
   };
 
   const addCategory = () =>
     setDraft((rows) => [
       ...rows,
-      { key: newKey(), name: "", color: COLORS[rows.length % COLORS.length], amount: "" },
+      { key: newKey(), name: "", color: COLORS[rows.length % COLORS.length], amount: "", percent: "" },
     ]);
 
   const removeCategory = (key: string) =>
@@ -142,7 +182,8 @@ export function IncomePanel({
     setDraft((rows) => {
       const next = rows.map((r) => {
         const amount = byName.get(r.name.trim().toLowerCase());
-        return amount === undefined ? { ...r } : { ...r, amount: String(amount) };
+        if (amount === undefined) return { ...r };
+        return { ...r, amount: String(amount), percent: percentFromAmount(String(amount), salaryNum) };
       });
       // The AI may propose new categories during a revision.
       const known = new Set(next.map((r) => r.name.trim().toLowerCase()));
@@ -155,6 +196,7 @@ export function IncomePanel({
           name: a.category.trim(),
           color: COLORS[next.length % COLORS.length],
           amount: String(a.amount),
+          percent: percentFromAmount(String(a.amount), salaryNum),
         });
       }
       return next;
@@ -283,7 +325,7 @@ export function IncomePanel({
               inputMode="decimal"
               placeholder="e.g. 2000"
               value={salary}
-              onChange={(e) => setSalary(e.target.value)}
+              onChange={(e) => changeSalary(e.target.value)}
             />
           </div>
           <div className="sm:col-span-2">
@@ -386,7 +428,7 @@ export function IncomePanel({
                   inputMode="decimal"
                   placeholder="0"
                   value={row.amount}
-                  onChange={(e) => updateRow(row.key, { amount: e.target.value })}
+                  onChange={(e) => changeAmount(row.key, e.target.value)}
                 />
                 <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
                   {currencyCode === "USD" ? "$" : currencyCode}
@@ -402,11 +444,7 @@ export function IncomePanel({
                   inputMode="decimal"
                   placeholder="0"
                   disabled={salaryNum <= 0}
-                  value={
-                    salaryNum > 0
-                      ? String(Math.round(((Number(row.amount) || 0) / salaryNum) * 1000) / 10)
-                      : ""
-                  }
+                  value={row.percent ?? ""}
                   onChange={(e) => changePercent(row.key, e.target.value)}
                 />
                 <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-slate-400">
