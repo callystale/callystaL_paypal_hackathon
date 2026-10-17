@@ -68,14 +68,14 @@ export function CalendarPanel({
     <section className="card">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Spending calendar
           </p>
           <h2 className="text-lg font-semibold">
             {shortDate(start, start.getFullYear() !== today.getFullYear())} –{" "}
             {shortDate(addDays(nextStart, -1), start.getFullYear() !== today.getFullYear())}
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             {periodTotal > 0 ? (
               <>
                 <Money amount={periodTotal} currency={currencyCode} /> spent this period
@@ -87,10 +87,10 @@ export function CalendarPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-slate-500">
+          <label className="flex items-center gap-2 text-xs text-slate-400">
             Month starts on
             <select
-              className="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-700"
+              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200"
               value={startDay}
               onChange={(e) => changeStartDay(e.target.value)}
             >
@@ -145,24 +145,24 @@ export function CalendarPanel({
             <div
               key={key}
               className={`flex min-h-[64px] flex-col rounded-lg border p-1.5 text-left transition ${
-                isToday ? "border-brand-500 ring-1 ring-brand-200" : "border-slate-100"
+                isToday ? "border-brand-400 ring-1 ring-brand-500/40" : "border-slate-800"
               }`}
               style={
                 spent > 0
-                  ? { backgroundColor: `rgba(99, 102, 241, ${0.06 + intensity * 0.22})` }
+                  ? { backgroundColor: `rgba(99, 102, 241, ${0.1 + intensity * 0.35})` }
                   : undefined
               }
               title={spent > 0 ? `${shortDate(d, true)} · ${spent.toFixed(2)}` : undefined}
             >
               <span
                 className={`text-xs ${
-                  isToday ? "font-semibold text-brand-700" : "text-slate-500"
+                  isToday ? "font-semibold text-brand-300" : "text-slate-400"
                 }`}
               >
                 {d.getDate()}
               </span>
               {spent > 0 && (
-                <span className="mt-auto truncate text-[11px] font-medium text-slate-700">
+                <span className="mt-auto truncate text-[11px] font-medium text-slate-200">
                   <Money amount={spent} currency={currencyCode} />
                 </span>
               )}

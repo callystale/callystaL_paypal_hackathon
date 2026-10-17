@@ -44,7 +44,7 @@ export function BudgetPanel({
     <section className="card">
       <header className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Step 3 · Budget
           </p>
           <h2 className="text-lg font-semibold">Categories &amp; spending</h2>
@@ -54,7 +54,7 @@ export function BudgetPanel({
             <div className="font-semibold">
               <Money amount={summary.totals.spent} currency={currencyCode} /> spent
             </div>
-            <div className="text-slate-500">
+            <div className="text-slate-400">
               of <Money amount={summary.totals.budget} currency={currencyCode} /> budget
             </div>
           </div>
@@ -87,7 +87,7 @@ export function BudgetPanel({
                     const next = e.target.value;
                     if (String(c.budget ?? "") !== next) updateBudget(c.id, next);
                   }}
-                  className="w-24 rounded-md border border-slate-200 px-2 py-1 text-right text-sm outline-none focus:border-brand-500"
+                  className="w-24 rounded-md border border-slate-700 px-2 py-1 text-right text-sm outline-none focus:border-brand-400"
                 />
                 <button
                   className="btn-ghost invisible px-1 group-hover:visible"
@@ -101,13 +101,13 @@ export function BudgetPanel({
             {c.budget != null && (
               <>
                 <Progress value={c.spent} max={c.budget} color={c.color} />
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-400">
                   {c.remaining != null && c.remaining >= 0 ? (
                     <>
                       <Money amount={c.remaining} currency={currencyCode} /> left
                     </>
                   ) : (
-                    <span className="text-rose-600">
+                    <span className="text-rose-400">
                       <Money amount={Math.abs(c.remaining ?? 0)} currency={currencyCode} /> over budget
                     </span>
                   )}
@@ -117,11 +117,11 @@ export function BudgetPanel({
           </div>
         ))}
         {summary && summary.categories.length === 0 && (
-          <p className="text-sm text-slate-500">No categories yet. Add one below.</p>
+          <p className="text-sm text-slate-400">No categories yet. Add one below.</p>
         )}
       </div>
 
-      <div className="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4">
+      <div className="flex flex-wrap items-end gap-2 border-t border-slate-800 pt-4">
         <div className="flex-1">
           <label className="label">New category</label>
           <input

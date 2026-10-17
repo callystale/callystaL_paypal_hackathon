@@ -32,7 +32,7 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-3 text-slate-500">
+      <div className="flex min-h-screen items-center justify-center gap-3 text-slate-400">
         <Spinner /> Loading your budget…
       </div>
     );
@@ -46,7 +46,7 @@ export function Dashboard() {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           Budget Planner
         </h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-500">
+        <p className="mt-1 max-w-2xl text-sm text-slate-400">
           Set up your monthly budget, record spending, and let a locally-run AI stage your wishlist
           into affordable milestones. The AI recommends — you approve and pay with PayPal.
         </p>
@@ -137,7 +137,7 @@ export function Dashboard() {
         onPaid={handlePaid}
       />
 
-      <footer className="mt-10 border-t border-slate-200 pt-4 text-xs text-slate-400">
+      <footer className="mt-10 border-t border-slate-700 pt-4 text-xs text-slate-400">
         Local AI via Ollama · Product search via Channel3 (optional) · Payments via PayPal Sandbox
       </footer>
     </div>
@@ -155,8 +155,8 @@ function Stat({
 }) {
   return (
     <div className="card py-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${tone === "danger" ? "text-rose-600" : ""}`}>
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+      <p className={`mt-1 text-lg font-semibold ${tone === "danger" ? "text-rose-400" : ""}`}>
         {value}
       </p>
     </div>

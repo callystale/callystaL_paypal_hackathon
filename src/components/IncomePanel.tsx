@@ -297,11 +297,11 @@ export function IncomePanel({
   return (
     <section className="card">
       <header className="mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
           Step 1 · Monthly budget
         </p>
         <h2 className="text-lg font-semibold">Set up a personalized monthly budget</h2>
-        <p className="mt-1 max-w-2xl text-sm text-slate-500">
+        <p className="mt-1 max-w-2xl text-sm text-slate-400">
           Tell the AI your income and what matters to you. It asks a few questions, then suggests
           how to split the money across your categories — edit anything before saving.
         </p>
@@ -314,7 +314,7 @@ export function IncomePanel({
       )}
 
       {/* --- AI planning block (top) --- */}
-      <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
+      <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className="label">Monthly take-home income</label>
@@ -349,7 +349,7 @@ export function IncomePanel({
               ↩ Revert last AI change
             </button>
           )}
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-400">
             The AI uses your income, goals and categories to plan your budget.
           </span>
         </div>
@@ -358,7 +358,7 @@ export function IncomePanel({
           <div className="mt-4 flex flex-col gap-3">
             {questions.map((q) => (
               <div key={q.id}>
-                <label className="label normal-case tracking-normal text-slate-600">
+                <label className="label normal-case tracking-normal text-slate-300">
                   {q.question}
                 </label>
                 <input
@@ -373,15 +373,15 @@ export function IncomePanel({
         )}
 
         {suggestion && (
-          <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-sm text-slate-700">{suggestion.explanation}</p>
+          <div className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3">
+            <p className="text-sm text-slate-200">{suggestion.explanation}</p>
             <p className="mt-1 text-xs text-slate-400">
               {suggestion.source === "ollama" ? "Suggested by your local AI" : "Suggested heuristically"} ·
               edit any amount in the categories below.
             </p>
 
             {suggestion.shortfall > 0 && (
-              <p className="mt-2 text-xs text-amber-600">
+              <p className="mt-2 text-xs text-amber-400">
                 Your goals and fixed costs exceed your income by {" "}
                 <Money amount={suggestion.shortfall} currency={currencyCode} /> — consider reducing a
                 goal or moving it later.
@@ -464,7 +464,7 @@ export function IncomePanel({
         </div>
 
         {draft.length > 0 && allocated > 0 && (
-          <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
             {draft.map((d) => (
               <span
                 key={d.key}
@@ -478,8 +478,8 @@ export function IncomePanel({
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-        <p className="text-sm text-slate-500">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
+        <p className="text-sm text-slate-400">
           {salaryNum > 0 ? (
             <>
               Allocated <Money amount={allocated} currency={currencyCode} />
@@ -488,11 +488,11 @@ export function IncomePanel({
               )}{" "}
               of <Money amount={salaryNum} currency={currencyCode} />
               {Math.abs(unallocated) < 0.01 ? (
-                <span className="text-emerald-600"> · fully allocated</span>
+                <span className="text-emerald-400"> · fully allocated</span>
               ) : unallocated > 0 ? (
                 <span className="text-slate-400"> · <Money amount={unallocated} currency={currencyCode} /> unallocated</span>
               ) : (
-                <span className="text-rose-600"> · <Money amount={Math.abs(unallocated)} currency={currencyCode} /> over income</span>
+                <span className="text-rose-400"> · <Money amount={Math.abs(unallocated)} currency={currencyCode} /> over income</span>
               )}
             </>
           ) : (
@@ -507,7 +507,7 @@ export function IncomePanel({
           {busy ? "Saving…" : "Save budget"}
         </button>
       </div>
-      {nameError && <p className="mt-2 text-xs text-rose-600">{nameError}</p>}
+      {nameError && <p className="mt-2 text-xs text-rose-400">{nameError}</p>}
     </section>
   );
 }

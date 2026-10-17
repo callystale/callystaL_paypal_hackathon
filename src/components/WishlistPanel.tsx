@@ -48,7 +48,7 @@ export function WishlistPanel({
   return (
     <section className="card">
       <header className="mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
           Step 4 · Purchase plan
         </p>
         <h2 className="text-lg font-semibold">Desired items</h2>
@@ -96,7 +96,7 @@ export function WishlistPanel({
         </button>
       </div>
 
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-slate-800">
         {wishlist.length === 0 && (
           <li className="pt-2">
             <EmptyState>Nothing on the wishlist yet.</EmptyState>
@@ -109,7 +109,7 @@ export function WishlistPanel({
                 {item.name}
                 <PriorityBadge priority={item.priority} />
                 {item.milestoneId && (
-                  <span className="badge bg-brand-50 text-brand-700">in plan</span>
+                  <span className="badge bg-brand-500/15 text-brand-300">in plan</span>
                 )}
               </p>
               <p className="truncate text-xs text-slate-400">
@@ -120,7 +120,7 @@ export function WishlistPanel({
                   : ""}
               </p>
               {item.alternativeName && (
-                <p className="mt-0.5 text-xs text-emerald-600">
+                <p className="mt-0.5 text-xs text-emerald-400">
                   ↔ swapped to {item.alternativeName} (<Money amount={item.alternativePrice ?? 0} currency={currencyCode} />)
                   <button
                     className="ml-2 underline"

@@ -43,12 +43,12 @@ export function CheckoutModal({
     <Modal open={Boolean(milestone)} onClose={close} title="Review & pay with PayPal" wide>
       {milestone && (
         <>
-          <div className="mb-4 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mb-4 rounded-xl border border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
               <span>{milestone.title}</span>
               <span>{milestone.items.length} items</span>
             </div>
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-800">
               {milestone.items.map((item) => (
                 <li key={item.id} className="flex items-center justify-between px-4 py-2 text-sm">
                   <span className="truncate">{item.alternativeName ?? item.name}</span>
@@ -79,7 +79,7 @@ export function CheckoutModal({
             </Alert>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-400">
                 The AI planned this milestone. You approve the final payment.
               </p>
               <PayPalScriptProvider
@@ -124,7 +124,7 @@ export function CheckoutModal({
                 />
               </PayPalScriptProvider>
               {busy && (
-                <p className="flex items-center gap-2 text-sm text-slate-500">
+                <p className="flex items-center gap-2 text-sm text-slate-400">
                   <Spinner /> Working…
                 </p>
               )}

@@ -49,9 +49,9 @@ export function AlternativesModal({
   return (
     <Modal open={Boolean(item)} onClose={onClose} title={`Lower-cost options for ${item?.name ?? ""}`} wide>
       {item && (
-        <p className="mb-4 text-sm text-slate-500">
+        <p className="mb-4 text-sm text-slate-400">
           Your target price is{" "}
-          <span className="font-medium text-slate-700">
+          <span className="font-medium text-slate-200">
             <Money amount={item.targetPrice} currency={currencyCode} />
           </span>
           . The AI recommends; you choose.
@@ -59,7 +59,7 @@ export function AlternativesModal({
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 py-8 text-sm text-slate-500">
+        <div className="flex items-center gap-2 py-8 text-sm text-slate-400">
           <Spinner /> Searching similar products…
         </div>
       )}
@@ -78,20 +78,20 @@ export function AlternativesModal({
             {data.alternatives.map((alt) => (
               <div
                 key={`${alt.title}-${alt.merchant}`}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 p-3"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 p-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{alt.title}</p>
-                  <p className="truncate text-xs text-slate-500">{alt.reason}</p>
+                  <p className="truncate text-xs text-slate-400">{alt.reason}</p>
                   <p className="mt-0.5 text-xs text-slate-400">
                     {alt.merchant} · {alt.availability}
                     {alt.savings > 0 && (
-                      <span className="ml-2 font-medium text-emerald-600">
+                      <span className="ml-2 font-medium text-emerald-400">
                         saves <Money amount={alt.savings} currency={alt.currency} />
                       </span>
                     )}
                     {alt.savings < 0 && (
-                      <span className="ml-2 font-medium text-rose-600">
+                      <span className="ml-2 font-medium text-rose-400">
                         +<Money amount={Math.abs(alt.savings)} currency={alt.currency} /> over target
                       </span>
                     )}
@@ -120,7 +120,7 @@ export function AlternativesModal({
               </div>
             ))}
             {data.alternatives.length === 0 && (
-              <p className="text-sm text-slate-500">No alternatives found for this item.</p>
+              <p className="text-sm text-slate-400">No alternatives found for this item.</p>
             )}
           </div>
         </>

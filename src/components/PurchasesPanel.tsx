@@ -125,12 +125,12 @@ export function PurchasesPanel({
     <section className="card">
       <header className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Step 2 · Spending
           </p>
           <h2 className="text-lg font-semibold">Purchases</h2>
         </div>
-        <div className="text-right text-sm text-slate-500">
+        <div className="text-right text-sm text-slate-400">
           {purchases.length} recorded · <Money amount={total} currency={currencyCode} />
         </div>
       </header>
@@ -180,7 +180,7 @@ export function PurchasesPanel({
         Adding the store or merchant is optional — it just helps the AI categorize the purchase.
       </p>
 
-      <ul className="mt-4 divide-y divide-slate-100">
+      <ul className="mt-4 divide-y divide-slate-800">
         {purchases.length === 0 && (
           <li className="pt-4">
             <EmptyState>No purchases yet. Record one above.</EmptyState>
@@ -258,7 +258,7 @@ export function PurchasesPanel({
                 </p>
               </div>
               <select
-                className="max-w-[9rem] rounded-md border border-slate-200 px-2 py-1 text-xs"
+                className="max-w-[9rem] rounded-md border border-slate-700 px-2 py-1 text-xs"
                 value={p.categoryId ?? ""}
                 onChange={(e) =>
                   run(() =>
