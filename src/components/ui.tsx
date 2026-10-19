@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { formatCurrency } from "@/lib/money";
 
 export function Money({
@@ -63,13 +63,32 @@ export function Modal({
   title,
   children,
   wide = false,
+  dim = true,
+  draggable = false,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   wide?: boolean;
+  /** Darken the page behind the dialog. Set false for lightweight popovers. */
+  dim?: boolean;
+  /** Allow dragging the dialog by its header. */
+  draggable?: boolean;
 }) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!open) setOffset({ x: 0, y: 0 });
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -79,15 +98,68 @@ export function Modal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggable) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    e.preventDefault();
+    drag.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: offset.x,
+      originY: offset.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const moveDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || d.pointerId !== e.pointerId) return;
+    setOffset({
+      x: d.originX + e.clientX - d.startX,
+      y: d.originY + e.clientY - d.startY,
+    });
+  };
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (drag.current?.pointerId === e.pointerId) drag.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center">
+    <div
+      className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center ${
+        dim ? "bg-black/70" : "bg-transparent"
+      }`}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         className={`my-8 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl shadow-black/50`}
+        style={draggable ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
       >
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
+        <div
+          className={`mb-4 flex items-center justify-between gap-4 ${
+            draggable ? "cursor-move touch-none select-none" : ""
+          }`}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            {draggable && (
+              <span className="shrink-0 text-sm text-slate-500" aria-hidden="true">
+                ⠿
+              </span>
+            )}
+            <h2 className="truncate text-lg font-semibold">{title}</h2>
+          </div>
           <button onClick={onClose} className="btn-ghost" aria-label="Close">
             ✕
           </button>

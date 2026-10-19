@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { api, type PurchaseDTO, type SettingsDTO, type SummaryDTO } from "@/lib/client";
-import { Money } from "./ui";
+import { formatCurrency } from "@/lib/money";
+import { Modal, Money } from "./ui";
 import { addDays, addMonths, dayKey, ordinal, periodStart } from "@/lib/period";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -33,6 +34,7 @@ export function CalendarPanel({
   // Any date inside the period currently being viewed; the period is derived
   // from it using the configured start day.
   const [anchor, setAnchor] = useState<Date>(() => periodStart(new Date(), startDay));
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const start = periodStart(anchor, startDay);
   const nextStart = addMonths(start, 1, startDay);
@@ -51,6 +53,27 @@ export function CalendarPanel({
     }
     return map;
   }, [purchases]);
+
+  const purchasesByDay = useMemo(() => {
+    const map = new Map<string, PurchaseDTO[]>();
+    for (const p of purchases) {
+      const key = dayKey(new Date(p.occurredAt));
+      const list = map.get(key);
+      if (list) list.push(p);
+      else map.set(key, [p]);
+    }
+    for (const list of map.values()) {
+      list.sort(
+        (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
+      );
+    }
+    return map;
+  }, [purchases]);
+
+  const selectedPurchases = selectedDay
+    ? purchasesByDay.get(dayKey(selectedDay)) ?? []
+    : [];
+  const selectedTotal = selectedPurchases.reduce((sum, p) => sum + p.amount, 0);
 
   const periodTotal = days.reduce((sum, d) => sum + (spentByDay.get(dayKey(d)) ?? 0), 0);
   const maxDay = days.reduce((max, d) => Math.max(max, spentByDay.get(dayKey(d)) ?? 0), 0);
@@ -142,9 +165,14 @@ export function CalendarPanel({
           const isToday = key === todayKey;
           const intensity = maxDay > 0 ? spent / maxDay : 0;
           return (
-            <div
+            <button
               key={key}
-              className={`flex min-h-[64px] flex-col rounded-lg border p-1.5 text-left transition ${
+              type="button"
+              onClick={() => setSelectedDay(d)}
+              aria-label={`${shortDate(d, true)}: ${
+                spent > 0 ? `${formatCurrency(spent, currencyCode)} spent` : "no spending"
+              }`}
+              className={`flex min-h-[64px] w-full flex-col rounded-lg border p-1.5 text-left transition hover:border-slate-500 ${
                 isToday ? "border-brand-400 ring-1 ring-brand-500/40" : "border-slate-800"
               }`}
               style={
@@ -152,7 +180,6 @@ export function CalendarPanel({
                   ? { backgroundColor: `rgba(99, 102, 241, ${0.1 + intensity * 0.35})` }
                   : undefined
               }
-              title={spent > 0 ? `${shortDate(d, true)} · ${spent.toFixed(2)}` : undefined}
             >
               <span
                 className={`text-xs ${
@@ -166,10 +193,56 @@ export function CalendarPanel({
                   <Money amount={spent} currency={currencyCode} />
                 </span>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
+
+      <Modal
+        open={selectedDay != null}
+        onClose={() => setSelectedDay(null)}
+        title={selectedDay ? `Spending · ${shortDate(selectedDay, true)}` : "Spending"}
+        dim={false}
+        draggable
+      >
+        {selectedPurchases.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
+            No purchases recorded on this day.
+          </p>
+        ) : (
+          <>
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <span className="text-sm text-slate-400">
+                {selectedPurchases.length} purchase
+                {selectedPurchases.length === 1 ? "" : "s"}
+              </span>
+              <span className="text-lg font-semibold">
+                <Money amount={selectedTotal} currency={currencyCode} />
+              </span>
+            </div>
+            <ul className="divide-y divide-slate-800">
+              {selectedPurchases.map((p) => (
+                <li key={p.id} className="flex items-start justify-between gap-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{p.description}</p>
+                    <p className="truncate text-xs text-slate-400">
+                      {new Date(p.occurredAt).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                      {p.merchant ? ` · ${p.merchant}` : ""}
+                      {` · ${p.categoryName ?? "Uncategorized"}`}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold">
+                    <Money amount={p.amount} currency={currencyCode} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Modal>
     </section>
   );
 }
