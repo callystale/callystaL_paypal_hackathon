@@ -1,19 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { api, type ItemDTO, type SummaryDTO } from "@/lib/client";
+import { api, type ItemDTO, type PlanResponse, type SummaryDTO } from "@/lib/client";
 import { EmptyState, Money, PriorityBadge } from "./ui";
+import { WhatIfModal } from "./WhatIfModal";
 
 const AI_CATEGORY = "__ai__";
 
 export function WishlistPanel({
   items,
   summary,
+  plan,
   run,
   onFindAlternatives,
 }: {
   items: ItemDTO[];
   summary: SummaryDTO | null;
+  plan: PlanResponse | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
   onFindAlternatives: (item: ItemDTO) => void;
 }) {
@@ -23,6 +26,8 @@ export function WishlistPanel({
   const [targetDate, setTargetDate] = useState("");
   const [category, setCategory] = useState(AI_CATEGORY);
   const [busy, setBusy] = useState(false);
+  const [whatIfFor, setWhatIfFor] = useState<ItemDTO | null>(null);
+  const [addingToPlan, setAddingToPlan] = useState(false);
 
   const currencyCode = summary?.currency ?? "USD";
   const wishlist = items.filter((i) => !i.purchased);
@@ -49,6 +54,14 @@ export function WishlistPanel({
     } finally {
       setBusy(false);
     }
+  };
+
+  const addToPlan = async () => {
+    if (!whatIfFor) return;
+    setAddingToPlan(true);
+    await run(() => api.post("/api/plan"));
+    setAddingToPlan(false);
+    setWhatIfFor(null);
   };
 
   return (
@@ -117,50 +130,103 @@ export function WishlistPanel({
           </li>
         )}
         {wishlist.map((item) => (
-          <li key={item.id} className="flex flex-wrap items-center gap-3 py-3">
-            <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-2 truncate text-sm font-medium">
-                {item.name}
-                <PriorityBadge priority={item.priority} />
-                {item.milestoneId && (
-                  <span className="badge bg-brand-500/15 text-brand-300">in plan</span>
-                )}
-              </p>
-              <p className="truncate text-xs text-slate-400">
-                target <Money amount={item.targetPrice} currency={currencyCode} />
-                {item.category ? ` · ${item.category}` : ""}
-                {item.targetDate
-                  ? ` · by ${new Date(item.targetDate).toLocaleDateString()}`
-                  : ""}
-              </p>
-              {item.alternativeName && (
-                <p className="mt-0.5 text-xs text-emerald-400">
-                  ↔ swapped to {item.alternativeName} (<Money amount={item.alternativePrice ?? 0} currency={currencyCode} />)
-                  <button
-                    className="ml-2 underline"
-                    onClick={() => run(() => api.patch(`/api/items/${item.id}`, { alternative: null }))}
-                  >
-                    revert
-                  </button>
+          <li key={item.id} className="py-2.5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <span className="truncate">{item.name}</span>
+                  <span className="shrink-0">
+                    <PriorityBadge priority={item.priority} />
+                  </span>
                 </p>
-              )}
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400">
+                  <select
+                    className="rounded-md border border-slate-700 bg-slate-950/60 px-1.5 py-0.5 text-xs text-slate-300 outline-none focus:border-brand-400"
+                    aria-label={`Category for ${item.name}`}
+                    title="Change label"
+                    value={item.category ?? ""}
+                    onChange={(e) =>
+                      run(() =>
+                        api.patch(`/api/items/${item.id}`, {
+                          category: e.target.value || null,
+                        }),
+                      )
+                    }
+                  >
+                    <option value="">No category</option>
+                    {item.category &&
+                      !summary?.categories.some((c) => c.name === item.category) && (
+                        <option value={item.category}>{item.category}</option>
+                      )}
+                    {summary?.categories.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                  {item.targetDate && (
+                    <span>by {new Date(item.targetDate).toLocaleDateString()}</span>
+                  )}
+                </div>
+                {item.alternativeName && (
+                  <p className="mt-1 text-xs text-emerald-400">
+                    ↔ swapped to {item.alternativeName} (
+                    <Money amount={item.alternativePrice ?? 0} currency={currencyCode} />)
+                    <button
+                      className="ml-2 underline"
+                      onClick={() =>
+                        run(() => api.patch(`/api/items/${item.id}`, { alternative: null }))
+                      }
+                    >
+                      revert
+                    </button>
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 flex-col items-end">
+                <span className="text-sm font-semibold">
+                  <Money amount={item.effectivePrice} currency={currencyCode} />
+                </span>
+                {item.alternativeName && (
+                  <span className="text-[11px] text-slate-500 line-through">
+                    <Money amount={item.targetPrice} currency={currencyCode} />
+                  </span>
+                )}
+              </div>
             </div>
-            <span className="text-sm font-semibold">
-              <Money amount={item.effectivePrice} currency={currencyCode} />
-            </span>
-            <button className="btn-secondary" onClick={() => onFindAlternatives(item)}>
-              Find cheaper
-            </button>
-            <button
-              className="btn-ghost px-1"
-              title="Remove"
-              onClick={() => run(() => api.delete(`/api/items/${item.id}`))}
-            >
-              ✕
-            </button>
+            <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1.5">
+              <button
+                className="btn btn-sm border border-brand-500/40 bg-brand-500/10 text-brand-200 hover:bg-brand-500/20"
+                onClick={() => setWhatIfFor(item)}
+              >
+                What if I buy now?
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => onFindAlternatives(item)}
+              >
+                Find cheaper
+              </button>
+              <button
+                className="btn-ghost px-1"
+                title="Remove"
+                onClick={() => run(() => api.delete(`/api/items/${item.id}`))}
+              >
+                ✕
+              </button>
+            </div>
           </li>
         ))}
       </ul>
+
+      <WhatIfModal
+        item={whatIfFor}
+        plan={plan}
+        summary={summary}
+        adding={addingToPlan}
+        onClose={() => setWhatIfFor(null)}
+        onAddToPlan={addToPlan}
+      />
     </section>
   );
 }

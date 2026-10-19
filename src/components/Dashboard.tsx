@@ -108,6 +108,7 @@ export function Dashboard() {
         <WishlistPanel
           items={items}
           summary={summary}
+          plan={plan}
           run={run}
           onFindAlternatives={setAlternativesFor}
         />
