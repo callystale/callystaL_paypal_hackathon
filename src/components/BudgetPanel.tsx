@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { api, type SummaryDTO } from "@/lib/client";
+import { SpendingCharts } from "./CategoryCharts";
 import { Money, Progress } from "./ui";
-
-const COLORS = ["#6366f1", "#22c55e", "#f97316", "#06b6d4", "#ec4899", "#8b5cf6", "#eab308"];
 
 export function BudgetPanel({
   summary,
@@ -13,26 +11,7 @@ export function BudgetPanel({
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
 }) {
-  const [name, setName] = useState("");
-  const [budget, setBudget] = useState("");
-  const [busy, setBusy] = useState(false);
-
   const currencyCode = summary?.currency ?? "USD";
-
-  const addCategory = async () => {
-    if (!name.trim()) return;
-    setBusy(true);
-    await run(() =>
-      api.post("/api/categories", {
-        name: name.trim(),
-        budget: budget ? Number(budget) : null,
-        color: COLORS[(summary?.categories.length ?? 0) % COLORS.length],
-      }),
-    );
-    setName("");
-    setBudget("");
-    setBusy(false);
-  };
 
   const updateBudget = async (id: string, value: string) => {
     await run(() =>
@@ -61,91 +40,76 @@ export function BudgetPanel({
         )}
       </header>
 
-      <div className="mb-4 flex flex-col gap-4">
-        {summary?.categories.map((c) => (
-          <div key={c.id} className="group">
-            <div className="mb-1 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <span
-                  className="inline-block h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: c.color }}
-                />
-                {c.name}
-                <span className="text-xs font-normal text-slate-400">
-                  {c.purchaseCount} purchase{c.purchaseCount === 1 ? "" : "s"}
-                </span>
-              </span>
-              <span className="flex items-center gap-2 text-sm">
-                <Money amount={c.spent} currency={currencyCode} />
-                <span className="text-slate-400">/</span>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="no cap"
-                  defaultValue={c.budget ?? ""}
-                  onBlur={(e) => {
-                    const next = e.target.value;
-                    if (String(c.budget ?? "") !== next) updateBudget(c.id, next);
-                  }}
-                  className="w-24 rounded-md border border-slate-700 px-2 py-1 text-right text-sm outline-none focus:border-brand-400"
-                />
-                <button
-                  className="btn-ghost invisible px-1 group-hover:visible"
-                  title="Delete category"
-                  onClick={() => run(() => api.delete(`/api/categories/${c.id}`))}
-                >
-                  ✕
-                </button>
-              </span>
-            </div>
-            {c.budget != null && (
-              <>
-                <Progress value={c.spent} max={c.budget} color={c.color} />
-                <p className="mt-1 text-xs text-slate-400">
-                  {c.remaining != null && c.remaining >= 0 ? (
-                    <>
-                      <Money amount={c.remaining} currency={currencyCode} /> left
-                    </>
-                  ) : (
-                    <span className="text-rose-400">
-                      <Money amount={Math.abs(c.remaining ?? 0)} currency={currencyCode} /> over budget
-                    </span>
-                  )}
-                </p>
-              </>
-            )}
-          </div>
-        ))}
-        {summary && summary.categories.length === 0 && (
-          <p className="text-sm text-slate-400">No categories yet. Add one below.</p>
-        )}
-      </div>
+      {summary && (
+        <SpendingCharts categories={summary.categories} currency={currencyCode} />
+      )}
 
-      <div className="flex flex-wrap items-end gap-2 border-t border-slate-800 pt-4">
-        <div className="flex-1">
-          <label className="label">New category</label>
-          <input
-            className="input"
-            placeholder="e.g. Travel"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addCategory()}
-          />
-        </div>
-        <div className="w-32">
-          <label className="label">Budget</label>
-          <input
-            className="input"
-            type="number"
-            min="0"
-            placeholder="optional"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-          />
-        </div>
-        <button className="btn-primary" onClick={addCategory} disabled={busy || !name.trim()}>
-          Add
-        </button>
+      <div className="divide-y divide-slate-800">
+        {summary?.categories.map((c) => {
+          const over = c.remaining != null && c.remaining < 0;
+          return (
+            <div key={c.id} className="group py-2 first:pt-0 last:pb-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                  <span
+                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: c.color }}
+                  />
+                  <span className="truncate">{c.name}</span>
+                  <span
+                    className="shrink-0 text-[11px] font-normal text-slate-500"
+                    title={`${c.purchaseCount} purchase${c.purchaseCount === 1 ? "" : "s"}`}
+                  >
+                    {c.purchaseCount}×
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1.5 text-sm">
+                  <Money amount={c.spent} currency={currencyCode} />
+                  <span className="text-slate-500">/</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="no cap"
+                    defaultValue={c.budget ?? ""}
+                    onBlur={(e) => {
+                      const next = e.target.value;
+                      if (String(c.budget ?? "") !== next) updateBudget(c.id, next);
+                    }}
+                    className="w-20 rounded-md border border-slate-700 px-1.5 py-0.5 text-right text-xs outline-none focus:border-brand-400"
+                  />
+                  <button
+                    className="btn-ghost invisible px-1 py-0.5 group-hover:visible"
+                    title="Delete category"
+                    onClick={() => run(() => api.delete(`/api/categories/${c.id}`))}
+                  >
+                    ✕
+                  </button>
+                </span>
+              </div>
+              {c.budget != null && (
+                <div className="mt-1 flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Progress value={c.spent} max={c.budget} color={c.color} />
+                  </div>
+                  <span
+                    className={`shrink-0 text-[11px] tabular-nums ${
+                      over ? "text-rose-400" : "text-slate-400"
+                    }`}
+                  >
+                    <Money
+                      amount={Math.abs(c.remaining ?? 0)}
+                      currency={currencyCode}
+                    />{" "}
+                    {over ? "over" : "left"}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {summary && summary.categories.length === 0 && (
+          <p className="text-sm text-slate-400">No categories yet. Add them in Step 1.</p>
+        )}
       </div>
     </section>
   );

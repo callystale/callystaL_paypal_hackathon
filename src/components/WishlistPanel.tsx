@@ -4,6 +4,8 @@ import { useState } from "react";
 import { api, type ItemDTO, type SummaryDTO } from "@/lib/client";
 import { EmptyState, Money, PriorityBadge } from "./ui";
 
+const AI_CATEGORY = "__ai__";
+
 export function WishlistPanel({
   items,
   summary,
@@ -19,7 +21,7 @@ export function WishlistPanel({
   const [price, setPrice] = useState("");
   const [priority, setPriority] = useState("MEDIUM");
   const [targetDate, setTargetDate] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(AI_CATEGORY);
   const [busy, setBusy] = useState(false);
 
   const currencyCode = summary?.currency ?? "USD";
@@ -28,21 +30,25 @@ export function WishlistPanel({
   const addItem = async () => {
     if (!name.trim() || !price) return;
     setBusy(true);
-    await run(() =>
-      api.post("/api/items", {
-        name: name.trim(),
-        targetPrice: Number(price),
-        priority,
-        targetDate: targetDate ? new Date(targetDate).toISOString() : null,
-        category: category.trim() || null,
-      }),
-    );
-    setName("");
-    setPrice("");
-    setTargetDate("");
-    setCategory("");
-    setPriority("MEDIUM");
-    setBusy(false);
+    try {
+      await run(() =>
+        api.post("/api/items", {
+          name: name.trim(),
+          targetPrice: Number(price),
+          priority,
+          targetDate: targetDate ? new Date(targetDate).toISOString() : null,
+          category: category === AI_CATEGORY ? null : category || null,
+          autoCategorize: category === AI_CATEGORY,
+        }),
+      );
+      setName("");
+      setPrice("");
+      setTargetDate("");
+      setCategory(AI_CATEGORY);
+      setPriority("MEDIUM");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -54,9 +60,9 @@ export function WishlistPanel({
         <h2 className="text-lg font-semibold">Desired items</h2>
       </header>
 
-      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-6">
+      <div className="mb-4 grid grid-cols-2 gap-2">
         <input
-          className="input col-span-2 sm:col-span-2"
+          className="input col-span-2"
           placeholder="Item to buy later"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -81,14 +87,22 @@ export function WishlistPanel({
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
         />
-        <input
+        <select
           className="input"
-          placeholder="Category"
+          aria-label="Category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-        />
+        >
+          <option value={AI_CATEGORY}>✨ Let AI label it</option>
+          <option value="">No category</option>
+          {summary?.categories.map((c) => (
+            <option key={c.id} value={c.name}>
+              {c.name}
+            </option>
+          ))}
+        </select>
         <button
-          className="btn-primary col-span-2 sm:col-span-6"
+          className="btn-primary col-span-2"
           onClick={addItem}
           disabled={busy || !name || !price}
         >
