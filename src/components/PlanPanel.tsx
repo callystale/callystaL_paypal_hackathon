@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { api, type MilestoneDTO, type PlanResponse, type StatusDTO, type SummaryDTO } from "@/lib/client";
+import type { SpendingAnalysisResponse } from "@/lib/spending";
 import { PeriodFilter } from "./PeriodFilter";
+import { SpendingAnalysisModal } from "./SpendingAnalysisModal";
 import { EmptyState, Money, PriorityBadge, Spinner } from "./ui";
 
 export function PlanPanel({
@@ -23,6 +25,10 @@ export function PlanPanel({
   onPeriodChange: (period: number) => void;
 }) {
   const [generating, setGenerating] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<SpendingAnalysisResponse | null>(null);
   const currencyCode = summary?.currency ?? "USD";
   const milestones = plan?.milestones ?? [];
 
@@ -30,6 +36,22 @@ export function PlanPanel({
     setGenerating(true);
     await run(() => api.post(`/api/plan?offset=${period}`));
     setGenerating(false);
+  };
+
+  const analyzeSpending = async () => {
+    setAnalysisOpen(true);
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    setAnalysis(null);
+    try {
+      setAnalysis(await api.post<SpendingAnalysisResponse>("/api/spending/analyze"));
+    } catch (error) {
+      setAnalysisError(
+        error instanceof Error ? error.message : "Could not analyze this month's spending",
+      );
+    } finally {
+      setAnalysisLoading(false);
+    }
   };
 
   return (
@@ -66,6 +88,15 @@ export function PlanPanel({
             startDay={summary?.monthStartDay ?? 1}
             label="Budget month"
           />
+          <button
+            className="btn-secondary"
+            onClick={analyzeSpending}
+            disabled={analysisLoading}
+            title="Analyze all spending from the current month"
+          >
+            {analysisLoading ? <Spinner /> : <span aria-hidden="true">📊</span>}
+            Analyze this month
+          </button>
           <button className="btn-secondary" onClick={generate} disabled={generating}>
             {generating ? <Spinner /> : null}
             {milestones.length ? "Regenerate" : "Generate plan"}
@@ -126,6 +157,14 @@ export function PlanPanel({
           ))}
         </div>
       )}
+
+      <SpendingAnalysisModal
+        open={analysisOpen}
+        loading={analysisLoading}
+        error={analysisError}
+        analysis={analysis}
+        onClose={() => setAnalysisOpen(false)}
+      />
     </section>
   );
 }
