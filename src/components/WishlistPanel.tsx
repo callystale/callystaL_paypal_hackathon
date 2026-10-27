@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { api, type ItemDTO, type PlanResponse, type SummaryDTO } from "@/lib/client";
+import { api, type ItemDTO, type SummaryDTO } from "@/lib/client";
 import { periodLabel } from "@/lib/period";
 import { PeriodFilter } from "./PeriodFilter";
+import { EditItemModal, type ItemEditPatch } from "./EditItemModal";
 import { EmptyState, Money, PriorityBadge } from "./ui";
 import { WhatIfModal } from "./WhatIfModal";
 
@@ -12,16 +13,16 @@ const AI_CATEGORY = "__ai__";
 export function WishlistPanel({
   items,
   summary,
-  plan,
   run,
+  refresh,
   onFindAlternatives,
   period,
   onPeriodChange,
 }: {
   items: ItemDTO[];
   summary: SummaryDTO | null;
-  plan: PlanResponse | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
+  refresh: () => Promise<void>;
   onFindAlternatives: (item: ItemDTO) => void;
   period: number;
   onPeriodChange: (period: number) => void;
@@ -33,6 +34,9 @@ export function WishlistPanel({
   const [category, setCategory] = useState(AI_CATEGORY);
   const [busy, setBusy] = useState(false);
   const [whatIfFor, setWhatIfFor] = useState<ItemDTO | null>(null);
+  const [editing, setEditing] = useState<ItemDTO | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const [addingToPlan, setAddingToPlan] = useState(false);
 
   const currencyCode = summary?.currency ?? "USD";
@@ -68,6 +72,21 @@ export function WishlistPanel({
     await run(() => api.post(`/api/plan?offset=${period}`));
     setAddingToPlan(false);
     setWhatIfFor(null);
+  };
+
+  const saveEdit = async (patch: ItemEditPatch) => {
+    if (!editing) return;
+    setSavingEdit(true);
+    setEditError(null);
+    try {
+      await api.patch(`/api/items/${editing.id}`, patch);
+      await refresh();
+      setEditing(null);
+    } catch (error) {
+      setEditError(error instanceof Error ? error.message : "Could not save item");
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   return (
@@ -158,6 +177,11 @@ export function WishlistPanel({
                   <span className="shrink-0">
                     <PriorityBadge priority={item.priority} />
                   </span>
+                  {item.milestoneId && (
+                    <span className="badge shrink-0 bg-brand-500/20 text-brand-300">
+                      planned
+                    </span>
+                  )}
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400">
                   <select
@@ -216,6 +240,15 @@ export function WishlistPanel({
             </div>
             <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1.5">
               <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  setEditError(null);
+                  setEditing(item);
+                }}
+              >
+                Edit
+              </button>
+              <button
                 className="btn btn-sm border border-brand-500/40 bg-brand-500/10 text-brand-200 hover:bg-brand-500/20"
                 onClick={() => setWhatIfFor(item)}
               >
@@ -241,11 +274,22 @@ export function WishlistPanel({
 
       <WhatIfModal
         item={whatIfFor}
-        plan={plan}
         summary={summary}
         adding={addingToPlan}
         onClose={() => setWhatIfFor(null)}
         onAddToPlan={addToPlan}
+      />
+
+      <EditItemModal
+        item={editing}
+        summary={summary}
+        saving={savingEdit}
+        error={editError}
+        onClose={() => {
+          setEditing(null);
+          setEditError(null);
+        }}
+        onSave={saveEdit}
       />
     </section>
   );

@@ -138,8 +138,8 @@ export function Dashboard() {
         <WishlistPanel
           items={items}
           summary={summary}
-          plan={plan}
           run={run}
+          refresh={refresh}
           onFindAlternatives={setAlternativesFor}
           period={budgetPeriod}
           onPeriodChange={setBudgetPeriod}
