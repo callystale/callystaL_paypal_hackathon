@@ -103,7 +103,7 @@ export function CheckoutModal({
                       setBusy(false);
                     }
                   }}
-                  onApprove={async (data) => {
+                  onApprove={async (data, actions) => {
                     setError(null);
                     setBusy(true);
                     try {
@@ -113,7 +113,15 @@ export function CheckoutModal({
                       setDone(result);
                       onPaid(result);
                     } catch (e) {
-                      setError(e instanceof Error ? e.message : "Capture failed");
+                      const message =
+                        e instanceof Error ? e.message : "Capture failed";
+                      setError(message);
+                      // PayPal wants the payer to pick another funding source.
+                      if (message.includes("INSTRUMENT_DECLINED")) {
+                        setBusy(false);
+                        await actions.restart();
+                        return;
+                      }
                     } finally {
                       setBusy(false);
                     }

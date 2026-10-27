@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api, type MilestoneDTO, type PlanResponse, type StatusDTO, type SummaryDTO } from "@/lib/client";
+import { PeriodFilter } from "./PeriodFilter";
 import { EmptyState, Money, PriorityBadge, Spinner } from "./ui";
 
 export function PlanPanel({
@@ -10,12 +11,16 @@ export function PlanPanel({
   summary,
   run,
   onCheckout,
+  period,
+  onPeriodChange,
 }: {
   plan: PlanResponse | null;
   status: StatusDTO | null;
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
   onCheckout: (milestone: MilestoneDTO) => void;
+  period: number;
+  onPeriodChange: (period: number) => void;
 }) {
   const [generating, setGenerating] = useState(false);
   const currencyCode = summary?.currency ?? "USD";
@@ -23,7 +28,7 @@ export function PlanPanel({
 
   const generate = async () => {
     setGenerating(true);
-    await run(() => api.post("/api/plan"));
+    await run(() => api.post(`/api/plan?offset=${period}`));
     setGenerating(false);
   };
 
@@ -54,7 +59,13 @@ export function PlanPanel({
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <PeriodFilter
+            value={period}
+            onChange={onPeriodChange}
+            startDay={summary?.monthStartDay ?? 1}
+            label="Budget month"
+          />
           <button className="btn-secondary" onClick={generate} disabled={generating}>
             {generating ? <Spinner /> : null}
             {milestones.length ? "Regenerate" : "Generate plan"}

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { api, type ItemDTO, type PlanResponse, type SummaryDTO } from "@/lib/client";
+import { periodLabel } from "@/lib/period";
+import { PeriodFilter } from "./PeriodFilter";
 import { EmptyState, Money, PriorityBadge } from "./ui";
 import { WhatIfModal } from "./WhatIfModal";
 
@@ -13,12 +15,16 @@ export function WishlistPanel({
   plan,
   run,
   onFindAlternatives,
+  period,
+  onPeriodChange,
 }: {
   items: ItemDTO[];
   summary: SummaryDTO | null;
   plan: PlanResponse | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
   onFindAlternatives: (item: ItemDTO) => void;
+  period: number;
+  onPeriodChange: (period: number) => void;
 }) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -59,18 +65,32 @@ export function WishlistPanel({
   const addToPlan = async () => {
     if (!whatIfFor) return;
     setAddingToPlan(true);
-    await run(() => api.post("/api/plan"));
+    await run(() => api.post(`/api/plan?offset=${period}`));
     setAddingToPlan(false);
     setWhatIfFor(null);
   };
 
   return (
     <section className="card">
-      <header className="mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
-          Step 4 · Purchase plan
-        </p>
-        <h2 className="text-lg font-semibold">Desired items</h2>
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
+            Step 4 · Purchase plan
+          </p>
+          <h2 className="text-lg font-semibold">Desired items</h2>
+          {summary && (
+            <p className="text-xs text-slate-400">
+              <Money amount={summary.totals.remaining} currency={currencyCode} /> left in{" "}
+              {periodLabel(new Date(summary.periodStart), new Date(summary.periodEnd))}
+            </p>
+          )}
+        </div>
+        <PeriodFilter
+          value={period}
+          onChange={onPeriodChange}
+          startDay={summary?.monthStartDay ?? 1}
+          label="Budget month"
+        />
       </header>
 
       <div className="mb-4 grid grid-cols-2 gap-2">

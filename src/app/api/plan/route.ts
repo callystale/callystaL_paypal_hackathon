@@ -4,16 +4,24 @@ import { toMilestoneDTO, toPlanItem } from "@/lib/dto";
 import { estimateMonthlyBudget, generatePlan } from "@/lib/planner";
 import { round2 } from "@/lib/money";
 import { getSettings } from "@/lib/settings";
-import { periodStart } from "@/lib/period";
+import { periodBounds } from "@/lib/period";
 
 export const dynamic = "force-dynamic";
 
-async function buildContext() {
+/** Parse the `offset` query param (0 = current month, -1 = previous month). */
+function parseOffset(raw: string | null): number {
+  const n = Number(raw ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(0, Math.max(-120, Math.trunc(n)));
+}
+
+async function buildContext(offset: number) {
   const settings = await getSettings();
+  const { start, end } = periodBounds(new Date(), settings.monthStartDay, offset);
   const [categories, purchases] = await Promise.all([
     prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.purchase.findMany({
-      where: { occurredAt: { gte: periodStart(new Date(), settings.monthStartDay) } },
+      where: { occurredAt: { gte: start, lt: end } },
     }),
   ]);
 
@@ -28,14 +36,15 @@ async function buildContext() {
   return { planCategories, monthlyBudget: estimateMonthlyBudget(planCategories) };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const offset = parseOffset(new URL(request.url).searchParams.get("offset"));
     const [milestones, context] = await Promise.all([
       prisma.milestone.findMany({
         include: { items: true },
         orderBy: { sequence: "asc" },
       }),
-      buildContext(),
+      buildContext(offset),
     ]);
 
     return ok({
@@ -47,11 +56,12 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const offset = parseOffset(new URL(request.url).searchParams.get("offset"));
     const [items, context] = await Promise.all([
       prisma.desiredItem.findMany({ where: { purchased: false }, orderBy: { createdAt: "asc" } }),
-      buildContext(),
+      buildContext(offset),
     ]);
 
     const plan = await generatePlan({

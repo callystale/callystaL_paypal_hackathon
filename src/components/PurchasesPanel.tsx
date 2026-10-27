@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { api, type PurchaseDTO, type SummaryDTO } from "@/lib/client";
+import { api, type PurchaseDTO, type SettingsDTO, type SummaryDTO } from "@/lib/client";
+import { PERIOD_CURRENT, periodBounds, periodLabel } from "@/lib/period";
+import { PeriodFilter } from "./PeriodFilter";
 import { EmptyState, Money, Spinner } from "./ui";
 
 const VISIBLE_LIMIT = 12;
@@ -31,12 +33,18 @@ function toDateInput(iso: string): string {
 
 export function PurchasesPanel({
   purchases,
+  settings,
   summary,
   run,
+  period,
+  onPeriodChange,
 }: {
   purchases: PurchaseDTO[];
+  settings: SettingsDTO | null;
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
+  period: number;
+  onPeriodChange: (period: number) => void;
 }) {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -48,10 +56,27 @@ export function PurchasesPanel({
 
   const currencyCode = summary?.currency ?? "USD";
   const categories = summary?.categories ?? [];
+  const startDay = settings?.monthStartDay ?? 1;
+
+  // Step 2 defaults to the current month but can be switched to the previous
+  // one; the list and its totals only ever show the selected period.
+  const { start, end } = useMemo(
+    () => periodBounds(new Date(), startDay, period),
+    [startDay, period],
+  );
+
+  const periodPurchases = useMemo(
+    () =>
+      purchases.filter((p) => {
+        const time = new Date(p.occurredAt).getTime();
+        return time >= start.getTime() && time < end.getTime();
+      }),
+    [purchases, start, end],
+  );
 
   const total = useMemo(
-    () => purchases.reduce((sum, p) => sum + p.amount, 0),
-    [purchases],
+    () => periodPurchases.reduce((sum, p) => sum + p.amount, 0),
+    [periodPurchases],
   );
 
   const addPurchase = async () => {
@@ -70,6 +95,8 @@ export function PurchasesPanel({
     setMerchant("");
     setCategoryId("");
     setBusy(false);
+    // New purchases are recorded today, so make sure the user can see it.
+    if (period !== PERIOD_CURRENT) onPeriodChange(PERIOD_CURRENT);
   };
 
   const startEdit = (p: PurchaseDTO) => {
@@ -119,19 +146,28 @@ export function PurchasesPanel({
     if (saved) setEditing(null);
   };
 
-  const visible = showAll ? purchases : purchases.slice(0, VISIBLE_LIMIT);
+  const visible = showAll ? periodPurchases : periodPurchases.slice(0, VISIBLE_LIMIT);
 
   return (
     <section className="card">
-      <header className="mb-4 flex items-center justify-between">
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Step 2 · Spending
           </p>
           <h2 className="text-lg font-semibold">Purchases</h2>
         </div>
-        <div className="text-right text-sm text-slate-400">
-          {purchases.length} recorded · <Money amount={total} currency={currencyCode} />
+        <div className="flex flex-col items-end gap-1.5 text-sm text-slate-400">
+          <PeriodFilter
+            value={period}
+            onChange={onPeriodChange}
+            startDay={startDay}
+            label="Spending month"
+          />
+          <span>
+            {periodPurchases.length} recorded in {periodLabel(start, end)} ·{" "}
+            <Money amount={total} currency={currencyCode} />
+          </span>
         </div>
       </header>
 
@@ -181,9 +217,11 @@ export function PurchasesPanel({
       </p>
 
       <ul className="mt-4 divide-y divide-slate-800">
-        {purchases.length === 0 && (
+        {periodPurchases.length === 0 && (
           <li className="pt-4">
-            <EmptyState>No purchases yet. Record one above.</EmptyState>
+            <EmptyState>
+              No purchases recorded in {periodLabel(start, end)}.
+            </EmptyState>
           </li>
         )}
         {visible.map((p) =>
@@ -297,12 +335,12 @@ export function PurchasesPanel({
         )}
       </ul>
 
-      {purchases.length > VISIBLE_LIMIT && (
+      {periodPurchases.length > VISIBLE_LIMIT && (
         <button
           className="btn-ghost mt-2 px-2 py-1 text-xs"
           onClick={() => setShowAll((v) => !v)}
         >
-          {showAll ? "Show fewer" : `Show all ${purchases.length}`}
+          {showAll ? "Show fewer" : `Show all ${periodPurchases.length}`}
         </button>
       )}
     </section>

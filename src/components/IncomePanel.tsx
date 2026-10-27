@@ -9,6 +9,7 @@ import {
   type SummaryDTO,
 } from "@/lib/client";
 import { round2 } from "@/lib/money";
+import { PeriodFilter } from "./PeriodFilter";
 import { Alert, Money } from "./ui";
 
 const COLORS = ["#6366f1", "#22c55e", "#f97316", "#06b6d4", "#ec4899", "#8b5cf6", "#eab308"];
@@ -41,10 +42,14 @@ export function IncomePanel({
   settings,
   summary,
   run,
+  period,
+  onPeriodChange,
 }: {
   settings: SettingsDTO | null;
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
+  period: number;
+  onPeriodChange: (period: number) => void;
 }) {
   const currencyCode = summary?.currency ?? "USD";
 
@@ -296,15 +301,29 @@ export function IncomePanel({
 
   return (
     <section className="card">
-      <header className="mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
-          Step 1 · Monthly budget
-        </p>
-        <h2 className="text-lg font-semibold">Set up a personalized monthly budget</h2>
-        <p className="mt-1 max-w-2xl text-sm text-slate-400">
-          Tell the AI your income and what matters to you. It asks a few questions, then suggests
-          how to split the money across your categories — edit anything before saving.
-        </p>
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
+            Step 1 · Monthly budget
+          </p>
+          <h2 className="text-lg font-semibold">Set up a personalized monthly budget</h2>
+          <p className="mt-1 max-w-2xl text-sm text-slate-400">
+            Tell the AI your income and what matters to you. It asks a few questions, then suggests
+            how to split the money across your categories — edit anything before saving.
+          </p>
+          {summary && (
+            <p className="mt-1 text-xs text-slate-500">
+              <Money amount={summary.totals.spent} currency={currencyCode} /> spent of{" "}
+              <Money amount={summary.totals.budget} currency={currencyCode} /> budgeted this period.
+            </p>
+          )}
+        </div>
+        <PeriodFilter
+          value={period}
+          onChange={onPeriodChange}
+          startDay={settings?.monthStartDay ?? 1}
+          label="Budget month"
+        />
       </header>
 
       {error && (

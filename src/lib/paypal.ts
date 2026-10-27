@@ -138,31 +138,142 @@ interface CaptureResponse {
   }>;
 }
 
-export async function captureOrder(orderId: string): Promise<CaptureResult> {
-  const token = await getAccessToken();
+interface PayPalErrorBody {
+  name?: string;
+  message?: string;
+  debug_id?: string;
+  details?: Array<{ issue?: string; description?: string }>;
+}
 
-  const res = await fetch(`${apiBase()}/v2/checkout/orders/${orderId}/capture`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
+/** Issues that are safe to retry (usually an approval-propagation race). */
+const RETRYABLE_ISSUES = new Set([
+  "ORDER_NOT_APPROVED",
+  "TRANSACTION_REFUSED",
+  "TRY_AGAIN_LATER",
+  "INTERNAL_SERVER_ERROR",
+]);
 
-  if (!res.ok) {
-    throw new Error(`PayPal capture failed (${res.status}): ${await res.text()}`);
+/** User-facing explanations for the issues PayPal is most likely to return. */
+const FRIENDLY_ISSUES: Record<string, string> = {
+  ORDER_NOT_APPROVED:
+    "PayPal has not finished approving this order yet. Please try the payment again.",
+  INSTRUMENT_DECLINED:
+    "That payment method was declined. Please choose another funding source.",
+  PAYER_ACTION_REQUIRED:
+    "PayPal needs another action from you before this payment can complete.",
+  TRANSACTION_REFUSED: "PayPal refused this transaction. Please try again.",
+};
+
+export class PayPalError extends Error {
+  status: number;
+  issue?: string;
+  debugId?: string;
+  retryable: boolean;
+
+  constructor(
+    message: string,
+    opts: { status: number; issue?: string; debugId?: string; retryable: boolean },
+  ) {
+    super(message);
+    this.name = "PayPalError";
+    this.status = opts.status;
+    this.issue = opts.issue;
+    this.debugId = opts.debugId;
+    this.retryable = opts.retryable;
+  }
+}
+
+function parsePayPalError(status: number, body: string): PayPalError {
+  let parsed: PayPalErrorBody | null = null;
+  try {
+    parsed = JSON.parse(body) as PayPalErrorBody;
+  } catch {
+    // PayPal sometimes returns plain text (or an empty body) on failures.
   }
 
-  const data = (await res.json()) as CaptureResponse;
-  const payerName = data.payer?.name
+  const issue = parsed?.details?.[0]?.issue;
+  const detail = parsed?.details?.[0]?.description;
+  const base = parsed?.message || detail || `PayPal request failed (${status})`;
+  const friendly = issue ? FRIENDLY_ISSUES[issue] : undefined;
+  const message = friendly
+    ? `${friendly} [${issue}]`
+    : issue && !base.includes(issue)
+      ? `${base} [${issue}]`
+      : base;
+
+  return new PayPalError(message, {
+    status,
+    issue,
+    debugId: parsed?.debug_id,
+    retryable:
+      status >= 500 || (issue ? RETRYABLE_ISSUES.has(issue) : false),
+  });
+}
+
+function payerNameFrom(data: CaptureResponse): string | undefined {
+  return data.payer?.name
     ? [data.payer.name.given_name, data.payer.name.surname].filter(Boolean).join(" ")
     : undefined;
+}
 
+function captureFrom(data: CaptureResponse): CaptureResult {
   return {
     id: data.id,
     status: data.status,
     captureId: data.purchase_units?.[0]?.payments?.captures?.[0]?.id,
-    payerName,
+    payerName: payerNameFrom(data),
   };
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Fetch an order that PayPal already captured, so retries stay idempotent. */
+async function getCapturedOrder(
+  orderId: string,
+  token: string,
+): Promise<CaptureResult> {
+  const res = await fetch(`${apiBase()}/v2/checkout/orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) {
+    throw parsePayPalError(res.status, await res.text());
+  }
+  return captureFrom((await res.json()) as CaptureResponse);
+}
+
+export async function captureOrder(orderId: string): Promise<CaptureResult> {
+  const token = await getAccessToken();
+  const maxAttempts = 3;
+  let lastError: PayPalError | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch(`${apiBase()}/v2/checkout/orders/${orderId}/capture`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (res.ok) {
+      return captureFrom((await res.json()) as CaptureResponse);
+    }
+
+    const error = parsePayPalError(res.status, await res.text());
+
+    // Another request (or a previous timed-out attempt) already captured it.
+    if (error.issue === "ORDER_ALREADY_CAPTURED") {
+      return getCapturedOrder(orderId, token);
+    }
+
+    lastError = error;
+    if (!error.retryable || attempt === maxAttempts) break;
+
+    // PayPal can briefly reject a capture while the approval is propagating.
+    await sleep(400 * attempt);
+  }
+
+  throw lastError ?? new Error("PayPal capture failed");
 }

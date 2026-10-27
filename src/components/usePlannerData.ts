@@ -11,7 +11,7 @@ import {
   type SummaryDTO,
 } from "@/lib/client";
 
-export function usePlannerData() {
+export function usePlannerData(summaryOffset = 0) {
   const [status, setStatus] = useState<StatusDTO | null>(null);
   const [summary, setSummary] = useState<SummaryDTO | null>(null);
   const [settings, setSettings] = useState<SettingsDTO | null>(null);
@@ -24,11 +24,11 @@ export function usePlannerData() {
   const refresh = useCallback(async () => {
     const [s, sum, set, p, i, pl] = await Promise.all([
       api.get<StatusDTO>("/api/status"),
-      api.get<SummaryDTO>("/api/summary"),
+      api.get<SummaryDTO>(`/api/summary?offset=${summaryOffset}`),
       api.get<SettingsDTO>("/api/settings"),
       api.get<PurchaseDTO[]>("/api/purchases"),
       api.get<ItemDTO[]>("/api/items"),
-      api.get<PlanResponse>("/api/plan"),
+      api.get<PlanResponse>(`/api/plan?offset=${summaryOffset}`),
     ]);
     setStatus(s);
     setSummary(sum);
@@ -36,7 +36,7 @@ export function usePlannerData() {
     setPurchases(p);
     setItems(i);
     setPlan(pl);
-  }, []);
+  }, [summaryOffset]);
 
   const run = useCallback(
     async (action: () => Promise<unknown>) => {

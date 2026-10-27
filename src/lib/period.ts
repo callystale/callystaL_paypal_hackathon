@@ -17,6 +17,12 @@ export function clampStartDay(day: number): number {
   return Math.min(Math.max(Math.round(day), 1), 31);
 }
 
+/** Offsets used by the month filter. Relative to the period containing today. */
+export const PERIOD_CURRENT = 0;
+export const PERIOD_PREVIOUS = -1;
+
+export type PeriodOffset = typeof PERIOD_CURRENT | typeof PERIOD_PREVIOUS;
+
 export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -43,6 +49,68 @@ export function periodStart(ref: Date, startDay: number): Date {
 export function addMonths(date: Date, delta: number, startDay: number): Date {
   const base = new Date(date.getFullYear(), date.getMonth() + delta, 1);
   return startDayOfMonth(base.getFullYear(), base.getMonth(), startDay);
+}
+
+/**
+ * Start (inclusive) and end (exclusive) of the budget period `offset` months
+ * away from the one containing `ref`. `offset` is 0 for the current period and
+ * -1 for the previous one.
+ */
+export function periodBounds(
+  ref: Date,
+  startDay: number,
+  offset = PERIOD_CURRENT,
+): { start: Date; end: Date } {
+  const start = addMonths(periodStart(ref, startDay), offset, startDay);
+  return { start, end: addMonths(start, 1, startDay) };
+}
+
+/** Human label for the period, e.g. "September 2026". */
+export function periodName(date: Date): string {
+  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+
+/**
+ * Label for a period, which may not line up with a calendar month. Periods
+ * starting on the 1st use the month name; custom start days use the date range.
+ */
+export function periodLabel(start: Date, end: Date): string {
+  if (start.getDate() === 1) return periodName(start);
+  const last = addDays(end, -1);
+  const sameYear = start.getFullYear() === last.getFullYear();
+  const startText = start.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
+  const endText = last.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return `${startText} – ${endText}`;
+}
+
+/**
+ * Friendly heading for a period viewed in the calendar, relative to the
+ * current period: "This month", "Last month", "Next month", or a short month
+ * label (e.g. "Aug 2026") when viewing further away.
+ */
+export function periodHeading(
+  start: Date,
+  currentStart: Date,
+  startDay: number,
+): string {
+  const previous = addMonths(currentStart, -1, startDay);
+  const next = addMonths(currentStart, 1, startDay);
+  if (start.getTime() === currentStart.getTime()) return "This month";
+  if (start.getTime() === previous.getTime()) return "Last month";
+  if (start.getTime() === next.getTime()) return "Next month";
+  const sameYear = start.getFullYear() === currentStart.getFullYear();
+  return start.toLocaleDateString(undefined, {
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
 }
 
 /** Stable local `YYYY-MM-DD` key for grouping purchases by day. */

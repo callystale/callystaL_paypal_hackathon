@@ -2,14 +2,19 @@
 
 import { api, type SummaryDTO } from "@/lib/client";
 import { SpendingCharts } from "./CategoryCharts";
+import { PeriodFilter } from "./PeriodFilter";
 import { Money, Progress } from "./ui";
 
 export function BudgetPanel({
   summary,
   run,
+  period,
+  onPeriodChange,
 }: {
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
+  period: number;
+  onPeriodChange: (period: number) => void;
 }) {
   const currencyCode = summary?.currency ?? "USD";
 
@@ -21,23 +26,31 @@ export function BudgetPanel({
 
   return (
     <section className="card">
-      <header className="mb-4 flex items-center justify-between">
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Step 3 · Budget
           </p>
           <h2 className="text-lg font-semibold">Categories &amp; spending</h2>
         </div>
-        {summary && (
-          <div className="text-right text-sm">
-            <div className="font-semibold">
-              <Money amount={summary.totals.spent} currency={currencyCode} /> spent
+        <div className="flex flex-col items-end gap-1.5">
+          <PeriodFilter
+            value={period}
+            onChange={onPeriodChange}
+            startDay={summary?.monthStartDay ?? 1}
+            label="Budget month"
+          />
+          {summary && (
+            <div className="text-right text-sm">
+              <div className="font-semibold">
+                <Money amount={summary.totals.spent} currency={currencyCode} /> spent
+              </div>
+              <div className="text-slate-400">
+                of <Money amount={summary.totals.budget} currency={currencyCode} /> budget
+              </div>
             </div>
-            <div className="text-slate-400">
-              of <Money amount={summary.totals.budget} currency={currencyCode} /> budget
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </header>
 
       {summary && (

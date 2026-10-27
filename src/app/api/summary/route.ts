@@ -3,17 +3,32 @@ import { ok, toErrorResponse } from "@/lib/api";
 import { toCategoryDTO } from "@/lib/dto";
 import { round2, currency } from "@/lib/money";
 import { getSettings } from "@/lib/settings";
-import { periodStart } from "@/lib/period";
+import { periodBounds } from "@/lib/period";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+/** Parse the `offset` query param (0 = current month, -1 = previous month). */
+function parseOffset(raw: string | null): number {
+  const n = Number(raw ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  // Only past/current periods make sense, and keep the range bounded.
+  return Math.min(0, Math.max(-120, Math.trunc(n)));
+}
+
+export async function GET(request: Request) {
   try {
     const settings = await getSettings();
-    const periodStartDate = periodStart(new Date(), settings.monthStartDay);
+    const offset = parseOffset(new URL(request.url).searchParams.get("offset"));
+    const { start: periodStartDate, end: periodEndDate } = periodBounds(
+      new Date(),
+      settings.monthStartDay,
+      offset,
+    );
     const [categories, purchases, allPurchases, itemCount, purchasedCount] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-      prisma.purchase.findMany({ where: { occurredAt: { gte: periodStartDate } } }),
+      prisma.purchase.findMany({
+        where: { occurredAt: { gte: periodStartDate, lt: periodEndDate } },
+      }),
       prisma.purchase.findMany({ select: { amount: true } }),
       prisma.desiredItem.count(),
       prisma.desiredItem.count({ where: { purchased: true } }),
@@ -28,6 +43,8 @@ export async function GET() {
     return ok({
       currency: currency(),
       periodStart: periodStartDate.toISOString(),
+      periodEnd: periodEndDate.toISOString(),
+      offset,
       monthStartDay: settings.monthStartDay,
       totals: {
         budget: totalBudget,

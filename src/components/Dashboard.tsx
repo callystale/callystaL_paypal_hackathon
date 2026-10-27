@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CaptureResponse, ItemDTO, MilestoneDTO } from "@/lib/client";
+import { PERIOD_CURRENT } from "@/lib/period";
 import { usePlannerData } from "./usePlannerData";
 import { StatusBar } from "./StatusBar";
 import { IncomePanel } from "./IncomePanel";
@@ -15,8 +16,13 @@ import { CheckoutModal } from "./CheckoutModal";
 import { Alert, Money, Spinner } from "./ui";
 
 export function Dashboard() {
+  // Every step opens on the current month; each panel can be switched to the
+  // previous month independently (Step 2 has its own spending period).
+  const [budgetPeriod, setBudgetPeriod] = useState<number>(PERIOD_CURRENT);
+  const [spendingPeriod, setSpendingPeriod] = useState<number>(PERIOD_CURRENT);
+
   const { status, summary, settings, purchases, items, plan, loading, error, refresh, run } =
-    usePlannerData();
+    usePlannerData(budgetPeriod);
   const [alternativesFor, setAlternativesFor] = useState<ItemDTO | null>(null);
   const [checkoutFor, setCheckoutFor] = useState<MilestoneDTO | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -39,6 +45,12 @@ export function Dashboard() {
   }
 
   const currencyCode = summary?.currency ?? "USD";
+  const periodShort = summary
+    ? new Date(summary.periodStart).toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+      })
+    : "";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -75,10 +87,10 @@ export function Dashboard() {
 
       {summary && (
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat label="Budget" value={<Money amount={summary.totals.budget} currency={currencyCode} />} />
-          <Stat label="Spent this period" value={<Money amount={summary.totals.spent} currency={currencyCode} />} />
+          <Stat label={`Budget · ${periodShort}`} value={<Money amount={summary.totals.budget} currency={currencyCode} />} />
+          <Stat label={`Spent · ${periodShort}`} value={<Money amount={summary.totals.spent} currency={currencyCode} />} />
           <Stat
-            label="Remaining"
+            label={`Remaining · ${periodShort}`}
             value={<Money amount={summary.totals.remaining} currency={currencyCode} />}
             tone={summary.totals.remaining < 0 ? "danger" : "ok"}
           />
@@ -99,18 +111,38 @@ export function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <IncomePanel settings={settings} summary={summary} run={run} />
-        <PurchasesPanel purchases={purchases} summary={summary} run={run} />
+        <IncomePanel
+          settings={settings}
+          summary={summary}
+          run={run}
+          period={budgetPeriod}
+          onPeriodChange={setBudgetPeriod}
+        />
+        <PurchasesPanel
+          purchases={purchases}
+          settings={settings}
+          summary={summary}
+          run={run}
+          period={spendingPeriod}
+          onPeriodChange={setSpendingPeriod}
+        />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <BudgetPanel summary={summary} run={run} />
+        <BudgetPanel
+          summary={summary}
+          run={run}
+          period={budgetPeriod}
+          onPeriodChange={setBudgetPeriod}
+        />
         <WishlistPanel
           items={items}
           summary={summary}
           plan={plan}
           run={run}
           onFindAlternatives={setAlternativesFor}
+          period={budgetPeriod}
+          onPeriodChange={setBudgetPeriod}
         />
       </div>
 
@@ -121,6 +153,8 @@ export function Dashboard() {
           summary={summary}
           run={run}
           onCheckout={setCheckoutFor}
+          period={budgetPeriod}
+          onPeriodChange={setBudgetPeriod}
         />
       </div>
 

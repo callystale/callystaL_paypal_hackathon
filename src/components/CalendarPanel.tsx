@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { api, type PurchaseDTO, type SettingsDTO, type SummaryDTO } from "@/lib/client";
 import { formatCurrency } from "@/lib/money";
 import { Modal, Money } from "./ui";
-import { addDays, addMonths, dayKey, ordinal, periodStart } from "@/lib/period";
+import { addDays, addMonths, dayKey, ordinal, periodHeading, periodStart } from "@/lib/period";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -37,13 +37,15 @@ export function CalendarPanel({
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const start = periodStart(anchor, startDay);
-  const nextStart = addMonths(start, 1, startDay);
+  const periodEnd = addMonths(start, 1, startDay);
+  const currentStart = periodStart(today, startDay);
+  const heading = periodHeading(start, currentStart, startDay);
 
   const days = useMemo(() => {
     const list: Date[] = [];
-    for (let d = start; d < nextStart; d = addDays(d, 1)) list.push(d);
+    for (let d = start; d < periodEnd; d = addDays(d, 1)) list.push(d);
     return list;
-  }, [start, nextStart]);
+  }, [start, periodEnd]);
 
   const spentByDay = useMemo(() => {
     const map = new Map<string, number>();
@@ -94,11 +96,11 @@ export function CalendarPanel({
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Spending calendar
           </p>
-          <h2 className="text-lg font-semibold">
-            {shortDate(start, start.getFullYear() !== today.getFullYear())} –{" "}
-            {shortDate(addDays(nextStart, -1), start.getFullYear() !== today.getFullYear())}
-          </h2>
+          <h2 className="text-lg font-semibold">{heading}</h2>
           <p className="text-xs text-slate-400">
+            {shortDate(start, start.getFullYear() !== today.getFullYear())} –{" "}
+            {shortDate(addDays(periodEnd, -1), start.getFullYear() !== today.getFullYear())}
+            {" · "}
             {periodTotal > 0 ? (
               <>
                 <Money amount={periodTotal} currency={currencyCode} /> spent this period
@@ -134,8 +136,9 @@ export function CalendarPanel({
           <button
             className="btn-secondary px-2 py-1 text-xs"
             onClick={() => setAnchor(new Date())}
+            title="Jump to this month"
           >
-            Today
+            This month
           </button>
           <button
             className="btn-secondary px-2 py-1 text-xs"
