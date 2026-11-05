@@ -8,10 +8,30 @@ import type {
 } from "./budget";
 import type { CategoryGuess } from "./planner";
 import type { Alternative } from "./alternatives";
+import type {
+  GroupDetailDTO,
+  GroupExpenseDTO,
+  GroupMemberDTO,
+  GroupShareDTO,
+  GroupSummaryDTO,
+  MemberBalance,
+  SettlementDTO,
+  SuggestedRepayment,
+} from "./group";
 
 export type { CategoryDTO, ItemDTO, MilestoneDTO, PurchaseDTO, SettingsDTO };
 export type { BudgetAllocation, BudgetQuestion, BudgetQuestionsResult, BudgetSuggestion };
 export type { CategoryGuess, Alternative };
+export type {
+  GroupDetailDTO,
+  GroupExpenseDTO,
+  GroupMemberDTO,
+  GroupShareDTO,
+  GroupSummaryDTO,
+  MemberBalance,
+  SettlementDTO,
+  SuggestedRepayment,
+};
 
 export type Priority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -65,6 +85,33 @@ export interface CaptureResponse {
   captureId?: string;
   payerName?: string;
   milestoneId?: string | null;
+}
+
+export interface CreateExpenseResponse {
+  expense: GroupExpenseDTO | null;
+  group: GroupDetailDTO;
+}
+
+export interface GroupMutationResponse {
+  group: GroupDetailDTO | null;
+}
+
+export interface PayPalSettlementResponse {
+  settlementId: string;
+  orderId: string;
+  status: string;
+  amountCents: number;
+  currency: string;
+  senderName: string;
+  recipientName: string;
+}
+
+export interface CaptureSettlementResponse {
+  settlementId: string;
+  status: string;
+  captureId?: string;
+  payerName?: string;
+  groupId: string;
 }
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {

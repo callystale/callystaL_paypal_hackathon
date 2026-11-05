@@ -18,6 +18,7 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 | 4. Build a purchase plan | Add desired items with optional priority, target date, or max price. The AI groups them into affordable milestones based on your budget and priorities. | **Desired items** + **AI milestones** |
 | 5. Find lower-cost options | For each planned item, the app searches similar products and compares price, availability, and fit. Swap an item into your plan in one click. | **Find cheaper** → alternatives modal |
 | 6. Pay when ready | Select a milestone, review the total, and approve a PayPal checkout. Items are marked purchased after capture. | **Check out this milestone** |
+| 7. Split group spending | Create a group, add members by PayPal email, record shared expenses, and see net balances plus a simplified repayment plan. Mark repayments settled manually or pay them with PayPal Sandbox. | **Groups** panel |
 
 ---
 
@@ -31,7 +32,8 @@ The AI recommends. You approve. Nothing is ever paid automatically.
   deterministic fallback catalogue keeps the flow demoable without a key).
 - **Payments:** PayPal JavaScript SDK (`@paypal/react-paypal-js`) against the PayPal **Sandbox**,
   with server-side Orders v2 create/capture.
-- **Database:** SQLite via Prisma.
+- **Database:** SQLite via Prisma. Group expenses, shares, and settlements store money in
+  integer minor units (cents) so splits always add up exactly.
 
 Everything degrades gracefully: if Ollama is offline the app uses a heuristic planner, and if
 Channel3 has no key it uses the fallback catalogue. PayPal checkout is the only feature that
@@ -92,6 +94,73 @@ made server-side to `/v1/search`.
 
 ---
 
+## Group spending split
+
+Choose **Split shared spending** in the dashboard header to open the **Groups** pane as a
+half-screen split beside the personal budget. Closing it restores the normal full-width planner.
+
+The group pane is an account-less shared-expense ledger for the demo:
+
+- Create a group with a name, currency, and your display name. One member is marked **you**
+  (`GroupMember.isSelf`) so the UI can show personal balances and export only your share.
+- Add friends using only their PayPal email. The email becomes their default display name;
+  use the pencil to set or clear a nickname without changing their payment address.
+  Emails are validated and duplicate emails within a group are rejected, ignoring case.
+  This does not verify a PayPal account or retrieve its profile name. Invite links and real
+  user accounts are intentionally deferred.
+- Pending payment requests do not lock expenses. Editing or deleting an expense clears
+  pending requests; create new links or QR codes for the updated balances. Completed payments
+  and PayPal captures being processed still lock expense edits.
+- Record an expense with a description, total, payer, date, and participants. The total is split
+  equally; leftover cents are assigned one at a time, deterministically, so the shares always
+  sum to the expense total.
+- Each member's net balance is `paid - own shares + settlements sent - settlements received`.
+  A greedy creditor/debtor match produces a short repayment plan.
+- Use **Reverse direction** on an unpaid suggested repayment to swap who owes whom.
+  This saves a direction correction separately from payments, updates balances, and clears
+  pending requests. Payment links and checkout follow the corrected recipient.
+- Mark a suggested repayment settled manually (recorded immediately), or use
+  **Pay with PayPal** to create a Sandbox order. A PayPal settlement stays `PENDING` and does
+  **not** change balances until capture is confirmed; the capture endpoint then marks it
+  `SETTLED`.
+- For each expense, **Add my share to budget** copies only your share into the personal budget
+  as one purchase, with an optional category. **Remove from budget** reverses it. Deleting the
+  expense or group also removes the linked personal purchase, so no orphan spending remains.
+
+Money for groups is stored in integer minor units:
+
+```
+Group          name, currency, created date
+GroupMember    group, display name, isSelf, optional future userId
+GroupExpense   group, payer, description, amountCents, date
+ExpenseShare   expense, member, amountCents, optional linked Purchase
+Settlement     group, sender, recipient, amountCents, status, PayPal reference
+```
+
+### Demo walkthrough
+
+`npm run db:seed` resets the sample data and creates a **Lake trip** group with three members:
+
+| Expense | Paid by | Total | Split |
+| ------- | ------- | ----- | ----- |
+| Cabin rental | You | $300.00 | $100.00 each |
+| Groceries for the cabin | Maya | $86.47 | $28.83 + $28.82 + $28.82 |
+
+The seeded balances are therefore **You are owed $171.18**, Maya owes **$42.36**, and Leo owes
+**$128.82**. The suggested plan is Leo → You $128.82 and Maya → You $42.36. The groceries expense
+also has You's $28.82 share linked to a personal **Groceries** purchase — open the Purchases
+panel to confirm the whole $86.47 was not imported.
+
+1. Create a group and add members.
+2. Record expenses paid by different members, including an amount that leaves a cent remainder.
+3. Check the per-member balances and suggested repayments.
+4. Press **Mark settled** on one repayment and watch the balances recalculate.
+5. Add/remove a personal share from the budget and check the personal spending total changes.
+6. With PayPal configured, press **Pay with PayPal**, approve with a Sandbox buyer, and confirm
+   the settlement only becomes `SETTLED` after capture.
+
+---
+
 ## Scripts
 
 | Command | Description |
@@ -101,6 +170,7 @@ made server-side to `/v1/search`.
 | `npm start` | Start the production server |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | `next lint` |
+| `npm test` | Split, balance, and repayment unit tests |
 | `npm run db:push` | Sync the Prisma schema to SQLite |
 | `npm run db:seed` | Seed sample data |
 | `npm run db:reset` | Reset and re-seed |
@@ -129,18 +199,20 @@ spending (60% of the remaining headroom), so plans stay realistic.
 
 ```
 prisma/
-  schema.prisma        Settings, Category, Purchase, DesiredItem, Milestone, Order
-  seed.ts              Sample data
+  schema.prisma        Settings, Category, Purchase, wishlist, Order, and group-split models
+  seed.ts              Sample data (including the Lake trip group)
 src/
   app/
     page.tsx           Dashboard entry
-    api/               Route handlers (settings, budgets, purchases, plan, alternatives, paypal…)
-  components/          UI: budget, purchases, wishlist, plan, checkout, modals
+    api/               Route handlers (settings, budgets, purchases, plan, groups, paypal…)
+  components/          UI: budget, purchases, wishlist, plan, groups, checkout, modals
   lib/
     ollama.ts          Local model client (JSON mode)
     planner.ts         Plan + categorization prompts and heuristic fallbacks
     channel3.ts        Product search + fallback catalogue
     paypal.ts          Orders v2 create/capture
+    group.ts           Integer-cent split, balances, repayment plan, group DTOs
+    group-data.ts      Shared Prisma query includes
     dto.ts             Response shaping
 ```
 

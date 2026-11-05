@@ -178,6 +178,29 @@ export function EmptyState({ children }: { children: ReactNode }) {
   );
 }
 
+/** Always points left → right: the debtor on the left owes the creditor on the right. */
+export function DebtArrow({ className = "my-0.5 h-4 w-16 sm:w-24" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 120 18"
+      className={`text-amber-400 ${className}`}
+      role="img"
+      aria-label="owes"
+    >
+      <line
+        x1="4"
+        y1="9"
+        x2="103"
+        y2="9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <path d="M103 3 L117 9 L103 15 Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function Alert({ kind = "error", children }: { kind?: "error" | "info"; children: ReactNode }) {
   const styles =
     kind === "error"

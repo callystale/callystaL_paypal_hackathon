@@ -1,6 +1,12 @@
-import type { Category, DesiredItem, Milestone, Purchase } from "@prisma/client";
+import type { Category, DesiredItem, Milestone, Prisma, Purchase } from "@prisma/client";
 import { round2 } from "./money";
 import type { PlanItem, Priority } from "./planner";
+import {
+  computeBalances,
+  suggestRepayments,
+  type GroupDetailDTO,
+  type GroupSummaryDTO,
+} from "./group";
 
 export interface CategoryDTO {
   id: string;
@@ -112,6 +118,138 @@ export function toMilestoneDTO(milestone: Milestone & { items: DesiredItem[] }):
     status: milestone.status,
     total: round2(items.reduce((sum, i) => sum + itemEffectivePrice(i), 0)),
     items: items.map(toItemDTO),
+  };
+}
+
+export type GroupSummaryPayload = Prisma.GroupGetPayload<{
+  include: {
+    members: { select: { id: true; displayName: true; isSelf: true } };
+    _count: { select: { members: true; expenses: true } };
+  };
+}>;
+
+export type GroupDetailPayload = Prisma.GroupGetPayload<{
+  include: {
+    members: true;
+    expenses: {
+      include: {
+        payer: true;
+        shares: { include: { member: true } };
+      };
+    };
+    settlements: { include: { sender: true; recipient: true } };
+    directionChanges: { include: { fromMember: true; toMember: true } };
+  };
+}>;
+
+export function toGroupSummaryDTO(group: GroupSummaryPayload): GroupSummaryDTO {
+  const self = group.members.find((member) => member.isSelf) ?? null;
+  return {
+    id: group.id,
+    name: group.name,
+    currency: group.currency,
+    createdAt: group.createdAt.toISOString(),
+    memberCount: group._count.members,
+    expenseCount: group._count.expenses,
+    selfMemberId: self?.id ?? null,
+    selfName: self?.displayName ?? null,
+  };
+}
+
+export function toGroupDetailDTO(group: GroupDetailPayload): GroupDetailDTO {
+  const members = group.members.map((member) => ({
+    id: member.id,
+    displayName: member.displayName,
+    isSelf: member.isSelf,
+    paypalAddress: member.paypalAddress,
+    createdAt: member.createdAt.toISOString(),
+  }));
+
+  const expenses = [...group.expenses]
+    .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime())
+    .map((expense) => ({
+      id: expense.id,
+      description: expense.description,
+      amountCents: expense.amountCents,
+      category: expense.category,
+      occurredAt: expense.occurredAt.toISOString(),
+      payerId: expense.payerId,
+      payerName: expense.payer.displayName,
+      shares: [...expense.shares]
+        .sort((a, b) => a.member.displayName.localeCompare(b.member.displayName))
+        .map((share) => ({
+          id: share.id,
+          memberId: share.memberId,
+          memberName: share.member.displayName,
+          isSelf: share.member.isSelf,
+          amountCents: share.amountCents,
+          purchaseId: share.purchaseId,
+        })),
+    }));
+
+  const settlements = [...group.settlements]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .map((settlement) => ({
+      id: settlement.id,
+      senderId: settlement.senderId,
+      senderName: settlement.sender.displayName,
+      recipientId: settlement.recipientId,
+      recipientName: settlement.recipient.displayName,
+      amountCents: settlement.amountCents,
+      status: settlement.status,
+      paypalOrderId: settlement.paypalOrderId,
+      paymentReference: settlement.paymentReference,
+      note: settlement.note,
+      settledAt: settlement.settledAt ? settlement.settledAt.toISOString() : null,
+      createdAt: settlement.createdAt.toISOString(),
+    }));
+
+  const directionChanges = [...group.directionChanges]
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    .map((change) => ({
+      id: change.id,
+      fromMemberId: change.fromMemberId,
+      fromName: change.fromMember.displayName,
+      toMemberId: change.toMemberId,
+      toName: change.toMember.displayName,
+      amountCents: change.amountCents,
+      createdAt: change.createdAt.toISOString(),
+    }));
+
+  const balances = computeBalances(
+    members,
+    group.expenses.map((expense) => ({
+      payerId: expense.payerId,
+      amountCents: expense.amountCents,
+      shares: expense.shares.map((share) => ({
+        memberId: share.memberId,
+        amountCents: share.amountCents,
+      })),
+    })),
+    group.settlements.map((settlement) => ({
+      senderId: settlement.senderId,
+      recipientId: settlement.recipientId,
+      amountCents: settlement.amountCents,
+      status: settlement.status,
+    })),
+    directionChanges,
+  );
+
+  return {
+    id: group.id,
+    name: group.name,
+    currency: group.currency,
+    createdAt: group.createdAt.toISOString(),
+    members,
+    expenses,
+    settlements,
+    balances,
+    repayments: suggestRepayments(balances),
+    directionChanges,
+    totals: {
+      spentCents: expenses.reduce((sum, expense) => sum + expense.amountCents, 0),
+      yourNetCents: balances.find((balance) => balance.isSelf)?.netCents ?? null,
+    },
   };
 }
 

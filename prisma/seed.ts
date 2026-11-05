@@ -5,6 +5,14 @@ const prisma = new PrismaClient();
 type Priority = "LOW" | "MEDIUM" | "HIGH";
 
 async function main() {
+  // Delete group records before purchases: an ExpenseShare may point at a
+  // personal-budget Purchase that was copied from the member's share.
+  await prisma.repaymentDirectionChange.deleteMany();
+  await prisma.settlement.deleteMany();
+  await prisma.expenseShare.deleteMany();
+  await prisma.groupExpense.deleteMany();
+  await prisma.groupMember.deleteMany();
+  await prisma.group.deleteMany();
   await prisma.order.deleteMany();
   await prisma.settings.deleteMany();
   await prisma.desiredItem.deleteMany();
@@ -63,6 +71,91 @@ async function main() {
     });
   }
 
+  // --- Demo group: three members, two payers, and a one-cent remainder ------
+  const daysAgo = (n: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - n);
+    return date;
+  };
+
+  const trip = await prisma.group.create({
+    data: {
+      name: "Lake trip",
+      currency: "USD",
+      members: {
+        create: [
+          { displayName: "You", isSelf: true, paypalAddress: "you-demo" },
+          { displayName: "Maya", paypalAddress: "maya-demo" },
+          { displayName: "Leo", paypalAddress: "leo-demo" },
+        ],
+      },
+    },
+    include: { members: true },
+  });
+  const you = trip.members.find((member) => member.displayName === "You")!;
+  const maya = trip.members.find((member) => member.displayName === "Maya")!;
+  const leo = trip.members.find((member) => member.displayName === "Leo")!;
+
+  // $300.00 / 3 = $100.00 each.
+  await prisma.groupExpense.create({
+    data: {
+      groupId: trip.id,
+      payerId: you.id,
+      description: "Cabin rental",
+      amountCents: 30000,
+      category: "Travel",
+      occurredAt: daysAgo(7),
+      shares: {
+        create: [
+          { memberId: you.id, amountCents: 10000 },
+          { memberId: maya.id, amountCents: 10000 },
+          { memberId: leo.id, amountCents: 10000 },
+        ],
+      },
+    },
+  });
+
+  // $86.47 / 3 = $28.82 with one leftover cent assigned to Maya. Shares still
+  // add up to exactly $86.47 — never $86.469999… from floating point.
+  const groceriesExpense = await prisma.groupExpense.create({
+    data: {
+      groupId: trip.id,
+      payerId: maya.id,
+      description: "Groceries for the cabin",
+      amountCents: 8647,
+      category: "Groceries",
+      occurredAt: daysAgo(3),
+      shares: {
+        create: [
+          { memberId: you.id, amountCents: 2882 },
+          { memberId: maya.id, amountCents: 2883 },
+          { memberId: leo.id, amountCents: 2882 },
+        ],
+      },
+    },
+    include: { shares: true },
+  });
+
+  // Show the optional bridge into the personal budget: only "You" gets a
+  // purchase, for their own $28.82 share — not the whole $86.47 expense.
+  const yourGroceriesShare = groceriesExpense.shares.find(
+    (share) => share.memberId === you.id,
+  )!;
+  const sharedPurchase = await prisma.purchase.create({
+    data: {
+      description: "Shared: Groceries for the cabin",
+      amount: 28.82,
+      merchant: trip.name,
+      categoryId: groceries.id,
+      userCategorized: true,
+      occurredAt: daysAgo(3),
+    },
+  });
+  await prisma.expenseShare.update({
+    where: { id: yourGroceriesShare.id },
+    data: { purchaseId: sharedPurchase.id },
+  });
+
   const plusDays = (n: number) => {
     const d = new Date();
     d.setDate(d.getDate() + n);
@@ -98,7 +191,9 @@ async function main() {
     });
   }
 
-  console.log("Seeded settings, categories, purchases, and desired items.");
+  console.log(
+    "Seeded settings, categories, purchases, desired items, and the Lake trip group.",
+  );
 }
 
 main()
