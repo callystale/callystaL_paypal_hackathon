@@ -206,6 +206,77 @@ export function suggestRepayments(balances: MemberBalance[]): SuggestedRepayment
   return plan;
 }
 
+/** Apply a confirmed transfer to debts, including payments made through a debt chain.
+ * Any excess becomes a credit owed back to the payer; money is never discarded.
+ */
+function applyRepayment(
+  plan: SuggestedRepayment[], members: BalanceMember[], senderId: string,
+  recipientId: string, amountCents: number,
+): void {
+  let remaining = amountCents;
+  while (remaining > 0) {
+    const queue: Array<{ id: string; path: SuggestedRepayment[] }> = [{ id: senderId, path: [] }];
+    const visited = new Set([senderId]);
+    let path: SuggestedRepayment[] | undefined;
+    for (let index = 0; index < queue.length && !path; index++) {
+      const current = queue[index];
+      for (const row of plan) {
+        if (row.fromMemberId !== current.id || row.amountCents <= 0 || visited.has(row.toMemberId)) continue;
+        const next = [...current.path, row];
+        if (row.toMemberId === recipientId) { path = next; break; }
+        visited.add(row.toMemberId);
+        queue.push({ id: row.toMemberId, path: next });
+      }
+    }
+    if (!path) break;
+    const applied = Math.min(remaining, ...path.map((row) => row.amountCents));
+    for (const row of path) row.amountCents -= applied;
+    remaining -= applied;
+  }
+  if (remaining > 0) {
+    const credit = plan.find((row) => row.fromMemberId === recipientId && row.toMemberId === senderId);
+    if (credit) credit.amountCents += remaining;
+    else plan.push({
+      fromMemberId: recipientId,
+      fromName: members.find((member) => member.id === recipientId)!.displayName,
+      toMemberId: senderId,
+      toName: members.find((member) => member.id === senderId)!.displayName,
+      amountCents: remaining,
+    });
+  }
+}
+
+/** Preserve direction corrections while accounting for every completed payment. */
+export function repaymentPlan(
+  members: BalanceMember[],
+  expenses: BalanceExpense[],
+  settlements: BalanceSettlement[],
+  changes: BalanceDirectionChange[],
+): SuggestedRepayment[] {
+  const plan = suggestRepayments(computeBalances(members, expenses, []));
+  // A direction correction changes the balances by twice the reversed amount.
+  for (const change of changes) {
+    applyRepayment(plan, members, change.fromMemberId, change.toMemberId, change.amountCents * 2);
+  }
+  for (const payment of settlements) {
+    if (payment.status !== "SETTLED") continue;
+    applyRepayment(plan, members, payment.senderId, payment.recipientId, payment.amountCents);
+  }
+  return plan.filter((row) => row.amountCents > 0);
+}
+
+/** Reject stale/duplicate payment attempts and amounts above the remaining debt. */
+export function validateRepayment(
+  repayments: SuggestedRepayment[], senderId: string, recipientId: string, amountCents: number,
+): string | null {
+  if (!Number.isInteger(amountCents) || amountCents <= 0 || senderId === recipientId) return "Enter a positive repayment amount between different members.";
+  const outstanding = repayments.find((row) => row.fromMemberId === senderId && row.toMemberId === recipientId);
+  if (!outstanding || amountCents > outstanding.amountCents) {
+    return "This repayment has changed or is already paid. Refresh the group before paying.";
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Wire-level DTOs shared by the API and the client.
 // ---------------------------------------------------------------------------

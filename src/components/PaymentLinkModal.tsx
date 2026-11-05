@@ -131,8 +131,8 @@ export function PaymentLinkModal({
           </>
         ) : (
           <Alert>
-            Add a PayPal email or PayPal.Me handle for {recipient?.displayName ?? "the recipient"}{" "}
-            first. Open the member editor in the group roster to add it.
+            Add a PayPal.Me handle for {recipient?.displayName ?? "the recipient"}{" "}
+            to share a link. For an email recipient, close this window and use their Pay button.
           </Alert>
         )}
 

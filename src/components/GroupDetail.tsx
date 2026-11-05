@@ -11,7 +11,7 @@ import type {
 } from "@/lib/client";
 import { fromCents, settlementLocksExpenses, splitEqually, toCents } from "@/lib/group";
 import { memberPaypalEmailSchema } from "@/lib/group-member";
-import { settlementReferenceLabel } from "@/lib/payment-link";
+import { paypalPaymentLink, settlementReferenceLabel } from "@/lib/payment-link";
 import { DebtArrow, EmptyState, Modal, Money, Spinner } from "./ui";
 
 export interface ExpenseInput {
@@ -58,7 +58,7 @@ export function GroupDetail({
   status: StatusDTO | null;
   categories: CategoryDTO[];
   busy: string | null;
-  onAddMember: (paypalAddress: string) => Promise<boolean>;
+  onAddMember: (paypalAddress: string, nickname: string) => Promise<boolean>;
   onUpdateMember: (
     memberId: string,
     input: { displayName: string; paypalAddress: string | null },
@@ -83,6 +83,7 @@ export function GroupDetail({
 }) {
   const selfMember = group.members.find((member) => member.isSelf) ?? null;
   const [memberPaypal, setMemberPaypal] = useState("");
+  const [memberNickname, setMemberNickname] = useState("");
   const [editingMember, setEditingMember] = useState<GroupMemberDTO | null>(null);
   const [memberDraft, setMemberDraft] = useState({
     displayName: "",
@@ -199,9 +200,10 @@ export function GroupDetail({
   const addMember = async () => {
     const email = memberPaypalEmailSchema.safeParse(memberPaypal);
     if (!email.success || busy === "member-add") return;
-    const added = await onAddMember(email.data);
+    const added = await onAddMember(email.data, memberNickname.trim());
     if (added) {
       setMemberPaypal("");
+      setMemberNickname("");
     }
   };
 
@@ -436,9 +438,24 @@ export function GroupDetail({
           </p>
 
           <div className="mt-3 space-y-2">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <input
-                className="input"
+                className="input min-w-0 flex-1 basis-36"
+                aria-label="Friend’s nickname (optional)"
+                placeholder="Nickname (optional)"
+                autoComplete="off"
+                maxLength={120}
+                value={memberNickname}
+                onChange={(e) => setMemberNickname(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void addMember();
+                  }
+                }}
+              />
+              <input
+                className="input min-w-0 flex-1 basis-48"
                 type="email"
                 aria-label="Friend’s PayPal email"
                 autoComplete="off"
@@ -463,8 +480,8 @@ export function GroupDetail({
             </div>
           </div>
           <p className="mt-1.5 text-[11px] text-slate-500">
-            Add a friend using their PayPal email. Their email appears automatically;
-            use the pencil to give them a nickname. Adding an email does not verify
+            Add a friend using their PayPal email and an optional nickname. Leave the nickname
+            blank to display their email. You can edit it later with the pencil. Adding an email does not verify
             their PayPal account or retrieve their profile name.
           </p>
         </section>
@@ -1032,7 +1049,8 @@ export function GroupDetail({
                 const recipient = group.members.find(
                   (member) => member.id === repayment.toMemberId,
                 );
-                const canRequest = Boolean(recipient?.paypalAddress);
+                const payLink = paypalPaymentLink(recipient?.paypalAddress, repayment.amountCents, group.currency);
+                const canRequest = Boolean(payLink);
                 return (
                   <li
                     key={key}
@@ -1117,28 +1135,24 @@ export function GroupDetail({
                         title={
                           canRequest
                             ? "Create a payment request with a link and QR code"
-                            : `Add a PayPal address for ${recipient?.displayName ?? repayment.toName} first`
+                            : "Link and QR sharing require a PayPal.Me handle; use Pay for email recipients"
                         }
                         onClick={() => onRequestPayment(repayment)}
                       >
                         {pending ? "View payment link / QR" : "Request payment / QR"}
                       </button>
-                      {status?.paypal.configured && (
+                      {recipient?.paypalAddress?.includes("@") && (
                         <button
                           className="btn-secondary btn-sm text-xs"
-                          disabled={pending}
-                          title={
-                            pending
-                              ? "Delete the pending PayPal request below to retry"
-                              : "Settle with PayPal Sandbox"
-                          }
+                          disabled={busy !== null}
+                          title={`Pay ${recipient.paypalAddress} through PayPal checkout`}
                           onClick={() => onPayWithPayPal(repayment)}
                         >
-                          Pay with PayPal
+                          Pay {repayment.toName}
                         </button>
                       )}
                     </div>
-                    {!canRequest && (
+                    {!canRequest && !recipient?.paypalAddress?.includes("@") && (
                       <p className="mt-1.5 text-[11px] text-amber-300">
                         Add a PayPal email or PayPal.Me handle for{" "}
                         {recipient?.displayName ?? repayment.toName} (pencil icon in
@@ -1167,6 +1181,8 @@ export function GroupDetail({
             Reverse direction corrects who owes whom and saves the change without recording a payment.
             Mark settled records a manual repayment. A payment link or QR code records a
             pending request; the balance changes only after you confirm the payment.
+            A confirmed payment can clear a chain of debts. Partial payments leave the remainder;
+            overpayments become credit owed back to the payer.
           </p>
         </section>
 
@@ -1199,6 +1215,7 @@ export function GroupDetail({
                             ? ` · PayPal ${settlement.paypalOrderId}`
                             : ""}
                       </p>
+                      {settlement.note && <p className="mt-1 text-xs text-slate-500">{settlement.note}</p>}
                     </div>
                     <span className="text-sm font-medium">
                       <Cents cents={settlement.amountCents} currency={group.currency} />
@@ -1216,8 +1233,8 @@ export function GroupDetail({
                     </span>
                     <button
                       className="btn-ghost px-1.5 py-1 text-[11px]"
-                      title="Remove this settlement from the ledger"
-                      disabled={deleting || settlement.status === "CAPTURING"}
+                      title={settlement.status === "SETTLED" && settlement.paypalOrderId ? "Completed PayPal payments stay in the ledger" : "Remove this settlement from the ledger"}
+                      disabled={deleting || settlement.status === "CAPTURING" || (settlement.status === "SETTLED" && Boolean(settlement.paypalOrderId))}
                       onClick={() => {
                         if (
                           window.confirm(

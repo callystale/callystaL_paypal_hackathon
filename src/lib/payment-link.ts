@@ -1,12 +1,6 @@
 import { fromCents } from "./group";
 
-/**
- * Build a shareable PayPal payment link for a group repayment.
- *
- * Members can enter either a PayPal email address or a PayPal.Me handle. The
- * email form uses PayPal's donate flow (which accepts a business email and a
- * preset amount); the handle form uses the shorter paypal.me amount URL.
- */
+/** Build PayPal.Me links only. Email recipients must use server-created checkout. */
 export function paypalPaymentLink(
   address: string | null | undefined,
   amountCents: number,
@@ -21,15 +15,8 @@ export function paypalPaymentLink(
 
   const amount = fromCents(amountCents).toFixed(2);
 
-  if (value.includes("@")) {
-    const params = new URLSearchParams({
-      business: value,
-      currency_code: currency,
-      amount,
-      item_name: "Group repayment",
-    });
-    return `https://www.paypal.com/donate/?${params.toString()}`;
-  }
+  // An email is not a PayPal.Me handle. Never route repayments through donations.
+  if (value.includes("@")) return null;
 
   const handle = value
     .replace(/^https?:\/\/(www\.)?paypal\.me\//i, "")

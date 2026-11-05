@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import {
   api,
@@ -10,7 +10,7 @@ import {
   type StatusDTO,
   type SuggestedRepayment,
 } from "@/lib/client";
-import { fromCents } from "@/lib/group";
+import { fromCents, toCents } from "@/lib/group";
 import { Alert, Modal, Money, Spinner } from "./ui";
 
 export function SettlementCheckoutModal({
@@ -26,11 +26,23 @@ export function SettlementCheckoutModal({
   onClose: () => void;
   onPaid: (result: CaptureSettlementResponse) => void;
 }) {
+  const [paymentAmount, setPaymentAmount] = useState("");
+  useEffect(() => {
+    setPaymentAmount(repayment ? fromCents(repayment.amountCents).toFixed(2) : "");
+    setError(null);
+    setDone(null);
+    settlementIdRef.current = null;
+  }, [repayment]);
+  const paymentCents = toCents(Number(paymentAmount));
+  const validAmount = Boolean(repayment && /^\d+(\.\d{1,2})?$/.test(paymentAmount) && paymentCents > 0 && paymentCents <= repayment.amountCents);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<CaptureSettlementResponse | null>(null);
   // PayPalButtons callbacks can outlive a render, so keep the server id in a ref.
   const settlementIdRef = useRef<string | null>(null);
+
+  const sender = group.members.find((member) => member.id === repayment?.fromMemberId);
+  const recipient = group.members.find((member) => member.id === repayment?.toMemberId);
 
   const clientId = status?.paypal.clientId || "";
   const configured = Boolean(status?.paypal.configured && clientId);
@@ -59,11 +71,17 @@ export function SettlementCheckoutModal({
             <dl className="divide-y divide-slate-800 text-sm">
               <div className="flex items-center justify-between px-4 py-2">
                 <dt className="text-slate-400">From</dt>
-                <dd>{repayment.fromName}</dd>
+                <dd className="text-right">
+                  <div>{repayment.fromName}</div>
+                  <div className="text-xs text-slate-400">{sender?.paypalAddress || "PayPal email required"}</div>
+                </dd>
               </div>
               <div className="flex items-center justify-between px-4 py-2">
                 <dt className="text-slate-400">To</dt>
-                <dd>{repayment.toName}</dd>
+                <dd className="text-right">
+                  <div>{repayment.toName}</div>
+                  <div className="text-xs text-slate-400">{recipient?.paypalAddress || "PayPal email required"}</div>
+                </dd>
               </div>
               <div className="flex items-center justify-between px-4 py-3 text-base font-semibold">
                 <dt>Amount</dt>
@@ -80,8 +98,7 @@ export function SettlementCheckoutModal({
           {done ? (
             <Alert kind="info">
               Payment {done.status.toLowerCase()}
-              {done.captureId ? ` · capture ${done.captureId}` : ""}. The repayment is now
-              marked settled.
+              {done.captureId ? ` · capture ${done.captureId}` : ""}. {done.status === "SETTLED" ? "The repayment is now marked settled." : "The payment is not settled yet."}
             </Alert>
           ) : !configured ? (
             <Alert>
@@ -93,15 +110,25 @@ export function SettlementCheckoutModal({
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-slate-400">
-                The settlement is recorded only after PayPal confirms the capture.
+                Log in to the sender’s PayPal account to pay the recipient shown above. No shipping address is needed. The settlement is recorded only after PayPal confirms the capture.
               </p>
+              <label className="block text-sm text-slate-300">
+                Amount to pay ({group.currency})
+                <input className="input mt-1" type="number" min="0.01" step="0.01"
+                  max={fromCents(repayment.amountCents)} value={paymentAmount} disabled={busy}
+                  onChange={(event) => setPaymentAmount(event.target.value)} />
+              </label>
+              <p className="text-xs text-slate-400">Pay the full amount or part of it. Any remaining debt stays visible.</p>
+              {!validAmount && <Alert>Enter an amount between 0.01 and {fromCents(repayment.amountCents).toFixed(2)}.</Alert>}
               <PayPalScriptProvider
                 options={{ clientId, currency: group.currency, intent: "capture" }}
               >
                 <PayPalButtons
                   style={{ layout: "vertical", shape: "rect" }}
-                  disabled={busy}
+                  disabled={busy || !validAmount}
+                  forceReRender={[paymentCents]}
                   createOrder={async () => {
+                    if (!validAmount) throw new Error("Enter a valid payment amount");
                     setError(null);
                     setBusy(true);
                     try {
@@ -110,7 +137,7 @@ export function SettlementCheckoutModal({
                         {
                           senderId: repayment.fromMemberId,
                           recipientId: repayment.toMemberId,
-                          amountCents: repayment.amountCents,
+                          amountCents: paymentCents,
                         },
                       );
                       settlementIdRef.current = order.settlementId;

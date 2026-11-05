@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   computeBalances,
+  repaymentPlan,
+  validateRepayment,
   settlementLocksExpenses,
   fromCents,
   splitEqually,
@@ -198,18 +200,13 @@ test("a settled repayment clears the debt and needs no new transfer", () => {
   assert.equal(suggestRepayments(balances).length, 0);
 });
 
-test("payment links support PayPal.Me handles and email addresses", () => {
+test("payment links support PayPal.Me and never turn emails into donations", () => {
   assert.equal(
     paypalPaymentLink("maya-demo", 4236, "USD"),
     "https://www.paypal.com/paypalme/maya-demo/42.36USD",
   );
 
-  const email = paypalPaymentLink("maya@example.com", 4236, "EUR");
-  assert.ok(email?.startsWith("https://www.paypal.com/donate/?"));
-  const params = new URL(email!).searchParams;
-  assert.equal(params.get("business"), "maya@example.com");
-  assert.equal(params.get("amount"), "42.36");
-  assert.equal(params.get("currency_code"), "EUR");
+  assert.equal(paypalPaymentLink("maya@example.com", 4236, "EUR"), null);
 
   assert.equal(paypalPaymentLink(null, 100, "USD"), null);
   assert.equal(paypalPaymentLink("   ", 100, "USD"), null);
@@ -253,4 +250,66 @@ test("reversing the same repayment back restores the original balances", () => {
     { fromMemberId: "b", toMemberId: "a", amountCents: 1001 },
     { fromMemberId: "a", toMemberId: "b", amountCents: 1001 },
   ]), computeBalances(members, expenses, []));
+});
+
+test("reversed repayments stay visible when group netting would cancel them", () => {
+  const expenses = [{ payerId: "a", amountCents: 3000, shares: members.map((m) => ({ memberId: m.id, amountCents: 1000 })) }];
+  const changes = [{ fromMemberId: "b", toMemberId: "a", amountCents: 1000 }];
+  const plan = repaymentPlan(members, expenses, [], changes);
+  assert.ok(plan.some((r) => r.fromMemberId === "a" && r.toMemberId === "b" && r.amountCents === 1000));
+  assert.ok(plan.some((r) => r.fromMemberId === "c" && r.toMemberId === "a" && r.amountCents === 1000));
+  const paid = repaymentPlan(members, expenses, [{ senderId: "a", recipientId: "b", amountCents: 1000, status: "SETTLED" }], changes);
+  assert.equal(paid.length, 1);
+  assert.equal(paid[0].fromMemberId, "c");
+});
+
+test("Nguyen paying Mia clears both legs of a $500 debt chain", () => {
+  const expenses = [{ payerId: "a", amountCents: 150000, shares: members.map((member) => ({ memberId: member.id, amountCents: 50000 })) }];
+  const changes = [{ fromMemberId: "b", toMemberId: "a", amountCents: 50000 }];
+  assert.deepEqual(repaymentPlan(members, expenses, [{ senderId: "c", recipientId: "b", amountCents: 50000, status: "SETTLED" }], changes), []);
+  const partial = repaymentPlan(members, expenses, [{ senderId: "c", recipientId: "b", amountCents: 20000, status: "SETTLED" }], changes);
+  assert.equal(partial.length, 2);
+  assert.ok(partial.every((row) => row.amountCents === 30000));
+});
+
+test("overpayments become credit; pending, failed and cancelled attempts do not clear debts", () => {
+  const expenses = [{ payerId: "a", amountCents: 1000, shares: [{ memberId: "b", amountCents: 1000 }] }];
+  for (const status of ["PENDING", "CAPTURING", "FAILED", "CANCELLED"]) {
+    assert.equal(repaymentPlan(members, expenses, [{ senderId: "b", recipientId: "a", amountCents: 1000, status }], [])[0].amountCents, 1000);
+  }
+  assert.deepEqual(repaymentPlan(members, expenses, [{ senderId: "b", recipientId: "a", amountCents: 1500, status: "SETTLED" }], []), [
+    { fromMemberId: "a", fromName: "You", toMemberId: "b", toName: "Maya", amountCents: 500 },
+  ]);
+});
+
+test("repayment plans agree with accounting balances across mixed payments and reversals", () => {
+  for (let i = 0; i < 60; i++) {
+    const expenses = [{ payerId: "a", amountCents: 3003, shares: members.map((m) => ({ memberId: m.id, amountCents: 1001 })) }];
+    const changes = [
+      { fromMemberId: "b", toMemberId: "a", amountCents: 1001 },
+      ...(i % 2 ? [{ fromMemberId: "a", toMemberId: "b", amountCents: 1001 }] : []),
+    ];
+    const payments = [
+      { senderId: "c", recipientId: "b", amountCents: i * 53 + 1, status: "SETTLED" },
+      { senderId: "a", recipientId: "c", amountCents: i * 31 + 1, status: "SETTLED" },
+      { senderId: "b", recipientId: "a", amountCents: i * 17 + 1, status: "PENDING" },
+    ];
+    const plan = repaymentPlan(members, expenses, payments, changes);
+    const balances = computeBalances(members, expenses, payments, changes);
+    for (const member of members) {
+      const represented = plan.reduce((sum, row) => sum + (row.toMemberId === member.id ? row.amountCents : 0) - (row.fromMemberId === member.id ? row.amountCents : 0), 0);
+      assert.equal(represented, balances.find((row) => row.memberId === member.id)!.netCents);
+    }
+    assert.ok(plan.every((row) => Number.isInteger(row.amountCents) && row.amountCents > 0));
+    assert.equal(new Set(plan.map((row) => `${row.fromMemberId}:${row.toMemberId}`)).size, plan.length);
+  }
+});
+
+test("paid or stale repayments and amounts above the remaining balance are rejected", () => {
+  const plan = [{ fromMemberId: "a", fromName: "You", toMemberId: "b", toName: "Maya", amountCents: 600 }];
+  assert.equal(validateRepayment(plan, "a", "b", 600), null);
+  assert.equal(validateRepayment(plan, "a", "b", 200), null);
+  assert.ok(validateRepayment(plan, "a", "b", 601));
+  assert.ok(validateRepayment([], "a", "b", 600));
+  assert.ok(validateRepayment(plan, "b", "a", 600));
 });

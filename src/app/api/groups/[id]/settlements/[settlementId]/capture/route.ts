@@ -1,3 +1,7 @@
+import { memberPaypalEmailSchema } from "@/lib/group-member";
+import { fromCents, validateRepayment } from "@/lib/group";
+import { groupDetailInclude } from "@/lib/group-data";
+import { toGroupDetailDTO } from "@/lib/dto";
 import { prisma } from "@/lib/prisma";
 import { bad, ok, toErrorResponse } from "@/lib/api";
 import { captureOrder, paypalConfigured, PayPalError } from "@/lib/paypal";
@@ -15,6 +19,7 @@ export async function POST(
 
     const settlement = await prisma.settlement.findFirst({
       where: { id: params.settlementId, groupId: params.id },
+      include: { sender: true, recipient: true, group: true },
     });
     if (!settlement) return bad("Settlement not found", 404);
 
@@ -32,19 +37,33 @@ export async function POST(
       return bad("This settlement has no PayPal order to capture", 400);
     }
 
-    // Claim the request before contacting PayPal. Expense edits can delete an
-    // unpaid PENDING request, but must never race with a capture in progress.
-    const claimed = await prisma.settlement.updateMany({
-      where: {
-        id: settlement.id,
-        groupId: params.id,
-        status: { in: ["PENDING", "CAPTURING"] },
-      },
-      data: { status: "CAPTURING" },
-    });
-    if (!claimed.count) return bad("This payment request changed. Refresh the group before paying.", 409);
+    const senderEmail = memberPaypalEmailSchema.safeParse(settlement.sender.paypalAddress);
+    if (!senderEmail.success) return bad("Add a valid PayPal email for the sender before paying", 400);
 
-    const capture = await captureOrder(settlement.paypalOrderId);
+    const recipientEmail = memberPaypalEmailSchema.safeParse(settlement.recipient.paypalAddress);
+    if (!recipientEmail.success) return bad("Add a valid PayPal email for the recipient before paying", 400);
+
+    // Serialize validation and the claim so two different orders cannot pay the same debt.
+    const claimError = await prisma.$transaction(async (tx) => {
+      const group = await tx.group.findUnique({ where: { id: params.id }, include: groupDetailInclude });
+      if (!group) return "Group not found";
+      const current = group.settlements.find((payment) => payment.id === settlement.id);
+      if (!current || !["PENDING", "CAPTURING"].includes(current.status)) {
+        return "This payment request changed. Refresh the group before paying.";
+      }
+      if (current.status === "PENDING") {
+        const invalid = validateRepayment(toGroupDetailDTO(group).repayments, current.senderId, current.recipientId, current.amountCents);
+        if (invalid) return invalid;
+      }
+      if (group.settlements.some((payment) => payment.id !== settlement.id && payment.status === "CAPTURING")) {
+        return "Another payment is being processed. Wait for confirmation before paying again.";
+      }
+      await tx.settlement.update({ where: { id: settlement.id }, data: { status: "CAPTURING" } });
+      return null;
+    });
+    if (claimError) return bad(claimError, 409);
+
+    const capture = await captureOrder(settlement.paypalOrderId, senderEmail.data, { payeeEmail: recipientEmail.data, amount: fromCents(settlement.amountCents), currency: settlement.group.currency });
     const completed = capture.status === "COMPLETED";
 
     if (completed) {
@@ -69,7 +88,7 @@ export async function POST(
     if (error instanceof PayPalError) {
       // A definitive PayPal rejection is unpaid. For network errors or server
       // failures retain CAPTURING until a retry reconciles the actual result.
-      if (error.issue === "INSTRUMENT_DECLINED" || error.issue === "ORDER_NOT_APPROVED") {
+      if (error.issue === "INSTRUMENT_DECLINED" || error.issue === "ORDER_NOT_APPROVED" || error.issue === "PAYER_ACCOUNT_MISMATCH" || error.issue === "PAYMENT_DETAILS_MISMATCH") {
         await prisma.settlement.updateMany({
           where: { id: params.settlementId, groupId: params.id, status: "CAPTURING" },
           data: { status: "PENDING" },
@@ -79,7 +98,7 @@ export async function POST(
         `PayPal group settlement capture failed for ${params.settlementId}: ${error.message}` +
           (error.debugId ? ` (debug_id: ${error.debugId})` : ""),
       );
-      const status = error.issue === "INSTRUMENT_DECLINED" ? 402 : 502;
+      const status = ["PAYER_ACCOUNT_MISMATCH", "PAYMENT_DETAILS_MISMATCH"].includes(error.issue || "") ? 409 : error.issue === "INSTRUMENT_DECLINED" ? 402 : 502;
       return bad(error.message, status);
     }
     console.error(`PayPal group settlement capture error for ${params.settlementId}:`, error);

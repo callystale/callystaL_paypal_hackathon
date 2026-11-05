@@ -3,7 +3,7 @@ import { round2 } from "./money";
 import type { PlanItem, Priority } from "./planner";
 import {
   computeBalances,
-  suggestRepayments,
+  repaymentPlan,
   type GroupDetailDTO,
   type GroupSummaryDTO,
 } from "./group";
@@ -244,7 +244,7 @@ export function toGroupDetailDTO(group: GroupDetailPayload): GroupDetailDTO {
     expenses,
     settlements,
     balances,
-    repayments: suggestRepayments(balances),
+    repayments: repaymentPlan(members, group.expenses, group.settlements, directionChanges),
     directionChanges,
     totals: {
       spentCents: expenses.reduce((sum, expense) => sum + expense.amountCents, 0),

@@ -12,6 +12,7 @@ import {
   type SummaryDTO,
   type SuggestedRepayment,
 } from "@/lib/client";
+import { createGroupMemberSchema } from "@/lib/group-member";
 import { GROUP_CURRENCIES } from "@/lib/group";
 import { GroupDetail, type ExpenseInput, type ExpenseUpdateInput } from "./GroupDetail";
 import { PaymentLinkModal } from "./PaymentLinkModal";
@@ -43,6 +44,12 @@ export function GroupsPanel({
   const [newCurrency, setNewCurrency] = useState<string>("USD");
   const [newYourName, setNewYourName] = useState("You");
   const [newYourPaypal, setNewYourPaypal] = useState("");
+  const [newFriends, setNewFriends] = useState([{ paypalAddress: "", displayName: "" }]);
+  const enteredFriends = newFriends.filter((friend) => friend.paypalAddress.trim() || friend.displayName.trim());
+  const friendsValid = enteredFriends.every((friend) => createGroupMemberSchema.safeParse(friend).success);
+  const updateNewFriend = (index: number, field: "paypalAddress" | "displayName", value: string) => {
+    setNewFriends((friends) => friends.map((friend, i) => i === index ? { ...friend, [field]: value } : friend));
+  };
   const [settlementFor, setSettlementFor] = useState<SuggestedRepayment | null>(null);
   const [paymentLinkFor, setPaymentLinkFor] = useState<SuggestedRepayment | null>(null);
 
@@ -129,10 +136,11 @@ export function GroupsPanel({
 
   const createGroup = async () => {
     const name = newName.trim();
-    if (!name) return;
+    if (!name || !friendsValid || busy === "group-create") return;
     const created = await runAction("group-create", async () => {
       const group = await api.post<GroupDetailDTO>("/api/groups", {
         name,
+        friends: enteredFriends,
         currency: newCurrency,
         yourName: newYourName.trim() || undefined,
         yourPaypalAddress: newYourPaypal.trim() || undefined,
@@ -146,8 +154,9 @@ export function GroupsPanel({
       setNewCurrency("USD");
       setNewYourName("You");
       setNewYourPaypal("");
+      setNewFriends([{ paypalAddress: "", displayName: "" }]);
       setShowCreate(false);
-      setNotice("Group created. Add members and record a shared expense.");
+      setNotice("Group created. Record your first shared expense.");
     }
   };
 
@@ -169,11 +178,13 @@ export function GroupsPanel({
 
   const addMember = async (
     paypalAddress: string,
+    nickname: string,
   ): Promise<boolean> => {
     if (!detail) return false;
     return runAction("member-add", async () => {
       await api.post(`/api/groups/${detail.id}/members`, {
         paypalAddress,
+        displayName: nickname,
       });
       await reloadGroup();
     });
@@ -491,7 +502,7 @@ export function GroupsPanel({
     captureId?: string;
   }): void => {
     setNotice(
-      `PayPal settlement ${result.status.toLowerCase()}${
+      `PayPal payment ${result.status === "SETTLED" ? "confirmed. Remaining debts updated" : `status: ${result.status.toLowerCase()}`} ${
         result.captureId ? ` · capture ${result.captureId}` : ""
       }.`,
     );
@@ -597,10 +608,48 @@ export function GroupsPanel({
               onChange={(e) => setNewYourPaypal(e.target.value)}
             />
           </div>
+          <fieldset className="mt-3 space-y-2" disabled={busy === "group-create"}>
+            <legend className="mb-2 text-sm font-medium">Friends (optional)</legend>
+            {newFriends.map((friend, index) => (
+              <div key={index} className="flex flex-wrap gap-2">
+                <input
+                  className="input min-w-0 flex-1 basis-36"
+                  aria-label={`Friend ${index + 1} nickname (optional)`}
+                  placeholder="Nickname (optional)"
+                  maxLength={120}
+                  value={friend.displayName}
+                  onChange={(e) => updateNewFriend(index, "displayName", e.target.value)}
+                />
+                <input
+                  className="input min-w-0 flex-1 basis-48"
+                  type="email"
+                  aria-label={`Friend ${index + 1} PayPal email`}
+                  placeholder="Friend’s PayPal email"
+                  autoComplete="off"
+                  maxLength={120}
+                  value={friend.paypalAddress}
+                  onChange={(e) => updateNewFriend(index, "paypalAddress", e.target.value)}
+                />
+                <button
+                  className="btn-ghost text-xs"
+                  aria-label={`Remove friend ${index + 1}`}
+                  onClick={() => setNewFriends((friends) => friends.filter((_, i) => i !== index))}
+                >Remove</button>
+              </div>
+            ))}
+            <button
+              className="btn-secondary btn-sm"
+              disabled={newFriends.length >= 100}
+              onClick={() => setNewFriends((friends) => [...friends, { paypalAddress: "", displayName: "" }])}
+            >+ Add friend</button>
+            {!friendsValid && (
+              <p className="text-xs text-amber-300">Enter a valid PayPal email for each friend, or remove the row.</p>
+            )}
+          </fieldset>
           <div className="mt-2 flex items-center gap-2">
             <button
               className="btn-primary"
-              disabled={!newName.trim() || busy === "group-create"}
+              disabled={!newName.trim() || !friendsValid || busy === "group-create"}
               onClick={() => void createGroup()}
             >
               {busy === "group-create" ? <Spinner /> : null} Create group

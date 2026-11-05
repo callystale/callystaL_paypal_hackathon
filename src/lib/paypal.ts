@@ -62,6 +62,8 @@ export interface CreateOrderInput {
   currency: string;
   description: string;
   referenceId?: string;
+  payeeEmail?: string;
+  noShipping?: boolean;
   lines?: OrderLine[];
 }
 
@@ -99,6 +101,7 @@ export async function createOrder(input: CreateOrderInput): Promise<PayPalOrder>
         : {}),
     },
   };
+  if (input.payeeEmail) purchaseUnit.payee = { email_address: input.payeeEmail };
   if (input.referenceId) purchaseUnit.reference_id = input.referenceId.slice(0, 127);
   if (items.length) purchaseUnit.items = items;
 
@@ -111,6 +114,11 @@ export async function createOrder(input: CreateOrderInput): Promise<PayPalOrder>
     body: JSON.stringify({
       intent: "CAPTURE",
       purchase_units: [purchaseUnit],
+      ...(input.noShipping ? {
+        payment_source: {
+          paypal: { experience_context: { shipping_preference: "NO_SHIPPING" } },
+        },
+      } : {}),
     }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -132,8 +140,11 @@ export interface CaptureResult {
 interface CaptureResponse {
   id: string;
   status: string;
-  payer?: { name?: { given_name?: string; surname?: string } };
+  payment_source?: { paypal?: { email_address?: string } };
+  payer?: { email_address?: string; name?: { given_name?: string; surname?: string } };
   purchase_units?: Array<{
+    payee?: { email_address?: string };
+    amount?: { currency_code?: string; value?: string };
     payments?: { captures?: Array<{ id?: string; status?: string }> };
   }>;
 }
@@ -219,7 +230,7 @@ function payerNameFrom(data: CaptureResponse): string | undefined {
 function captureFrom(data: CaptureResponse): CaptureResult {
   return {
     id: data.id,
-    status: data.status,
+    status: data.purchase_units?.[0]?.payments?.captures?.[0]?.status ?? data.status,
     captureId: data.purchase_units?.[0]?.payments?.captures?.[0]?.id,
     payerName: payerNameFrom(data),
   };
@@ -242,8 +253,36 @@ async function getCapturedOrder(
   return captureFrom((await res.json()) as CaptureResponse);
 }
 
-export async function captureOrder(orderId: string): Promise<CaptureResult> {
+export async function captureOrder(orderId: string, expectedPayerEmail?: string, expectedPayment?: {
+  payeeEmail: string; amount: number; currency: string;
+}): Promise<CaptureResult> {
   const token = await getAccessToken();
+  if (expectedPayerEmail !== undefined) {
+    // Read PayPal's approved payer on the server. Browser-supplied payer data is untrusted.
+    const response = await fetch(`${apiBase()}/v2/checkout/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) throw parsePayPalError(response.status, await response.text());
+    const order = await response.json() as CaptureResponse;
+    const payer = order.payer?.email_address || order.payment_source?.paypal?.email_address;
+    if (!expectedPayerEmail.trim() || !payer || payer.trim().toLowerCase() !== expectedPayerEmail.trim().toLowerCase()) {
+      throw new PayPalError(
+        `The logged-in PayPal account does not match this repayment’s sender. Log out of PayPal and sign in as ${expectedPayerEmail} before trying again.`,
+        { status: 409, issue: "PAYER_ACCOUNT_MISMATCH", retryable: false },
+      );
+    }
+    if (expectedPayment) {
+      const units = order.purchase_units;
+      const unit = units?.[0];
+      if (units?.length !== 1 || unit?.payee?.email_address?.trim().toLowerCase() !== expectedPayment.payeeEmail.trim().toLowerCase() ||
+          unit?.amount?.currency_code !== expectedPayment.currency || unit?.amount?.value !== toPayPalAmount(expectedPayment.amount)) {
+        throw new PayPalError("This PayPal order does not match the repayment recipient, currency or amount. Start a new checkout.",
+          { status: 409, issue: "PAYMENT_DETAILS_MISMATCH", retryable: false });
+      }
+    }
+    if (order.status === "COMPLETED") return captureFrom(order);
+  }
   const maxAttempts = 3;
   let lastError: PayPalError | null = null;
 

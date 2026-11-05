@@ -1,8 +1,9 @@
+import { validateRepayment } from "@/lib/group";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { bad, ok, toErrorResponse } from "@/lib/api";
 import { toGroupDetailDTO } from "@/lib/dto";
-import { findGroupDetail, findGroupWithMembers } from "@/lib/group-data";
+import { findGroupDetail, groupDetailInclude } from "@/lib/group-data";
 
 export const dynamic = "force-dynamic";
 
@@ -25,25 +26,29 @@ export async function POST(
       return bad("Sender and recipient must be different members", 400);
     }
 
-    const group = await findGroupWithMembers(params.id);
-    if (!group) return bad("Group not found", 404);
-    const memberIds = new Set(group.members.map((member) => member.id));
-    if (!memberIds.has(body.senderId) || !memberIds.has(body.recipientId)) {
-      return bad("Both members must belong to this group", 400);
-    }
-
     const settled = body.status === "SETTLED";
-    const settlement = await prisma.settlement.create({
-      data: {
-        groupId: params.id,
-        senderId: body.senderId,
-        recipientId: body.recipientId,
-        amountCents: body.amountCents,
-        status: body.status,
-        note: body.note || null,
+    const settlement = await prisma.$transaction(async (tx) => {
+      const group = await tx.group.findUnique({ where: { id: params.id }, include: groupDetailInclude });
+      if (!group) throw new Error("Group not found");
+      const invalid = validateRepayment(toGroupDetailDTO(group).repayments, body.senderId, body.recipientId, body.amountCents);
+      if (invalid) throw new Error(invalid);
+      if (group.settlements.some((payment) => payment.status === "CAPTURING")) {
+        throw new Error("A payment is being processed. Wait for confirmation before recording another payment.");
+      }
+      const existing = group.settlements.find((payment) => payment.status === "PENDING" &&
+        payment.senderId === body.senderId && payment.recipientId === body.recipientId && payment.amountCents === body.amountCents);
+      if (existing?.paypalOrderId && settled) throw new Error("Confirm this payment through PayPal checkout instead of marking it settled manually.");
+      if (existing) {
+        return settled ? tx.settlement.update({ where: { id: existing.id }, data: {
+          status: "SETTLED", settledAt: new Date(), paymentReference: body.paymentReference || "manual", note: body.note || existing.note,
+        } }) : existing;
+      }
+      return tx.settlement.create({ data: {
+        groupId: params.id, senderId: body.senderId, recipientId: body.recipientId,
+        amountCents: body.amountCents, status: body.status, note: body.note || null,
         paymentReference: body.paymentReference || (settled ? "manual" : null),
         settledAt: settled ? new Date() : null,
-      },
+      } });
     });
 
     const detail = await findGroupDetail(params.id);
@@ -55,6 +60,7 @@ export async function POST(
       201,
     );
   } catch (error) {
+    if (error instanceof Error && !(error instanceof z.ZodError)) return bad(error.message, 409);
     return toErrorResponse(error);
   }
 }

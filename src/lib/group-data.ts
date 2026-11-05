@@ -21,6 +21,7 @@ export const groupDetailInclude = Prisma.validator<Prisma.GroupInclude>()({
   },
   directionChanges: { include: { fromMember: true, toMember: true } },
   settlements: {
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     include: { sender: true, recipient: true },
   },
 });

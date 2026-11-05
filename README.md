@@ -103,8 +103,9 @@ The group pane is an account-less shared-expense ledger for the demo:
 
 - Create a group with a name, currency, and your display name. One member is marked **you**
   (`GroupMember.isSelf`) so the UI can show personal balances and export only your share.
-- Add friends using only their PayPal email. The email becomes their default display name;
-  use the pencil to set or clear a nickname without changing their payment address.
+- Add friends while creating the group or later in Members, using their PayPal email and an optional nickname. If no nickname is entered,
+  the email becomes their display name. Use the pencil to edit the nickname later without
+  changing their payment address.
   Emails are validated and duplicate emails within a group are rejected, ignoring case.
   This does not verify a PayPal account or retrieve its profile name. Invite links and real
   user accounts are intentionally deferred.
@@ -119,8 +120,17 @@ The group pane is an account-less shared-expense ledger for the demo:
 - Use **Reverse direction** on an unpaid suggested repayment to swap who owes whom.
   This saves a direction correction separately from payments, updates balances, and clears
   pending requests. Payment links and checkout follow the corrected recipient.
+- Confirmed payments clear the sender’s debt, including a chain such as Nguyen → You → Mia:
+  Nguyen paying Mia once clears both legs. Partial payments leave only the remainder;
+  excess payments become credit owed back to the actual payer. Pending, processing, failed,
+  and cancelled attempts do not reduce debts. Completed transfers remain in settlement history.
+- Checkout validates the payer, recipient, currency, amount, and remaining debt before capture.
+  Already-paid or stale requests are rejected. Completed PayPal payments cannot be marked
+  manually or deleted from the ledger. Partial PayPal payments can be entered at checkout.
 - Mark a suggested repayment settled manually (recorded immediately), or use
-  **Pay with PayPal** to create a Sandbox order. A PayPal settlement stays `PENDING` and does
+  **Pay with PayPal** to create a Sandbox order addressed to the recipient’s saved PayPal
+  email. Checkout shows that email for review and requires a valid recipient email.
+  Sandbox payments require a Sandbox recipient account. A PayPal settlement stays `PENDING` and does
   **not** change balances until capture is confirmed; the capture endpoint then marks it
   `SETTLED`.
 - For each expense, **Add my share to budget** copies only your share into the personal budget
