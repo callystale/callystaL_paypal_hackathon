@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import type {
   GroupDetailDTO,
@@ -27,13 +27,16 @@ export function PaymentLinkModal({
   onDeleteRequest: (settlement: SettlementDTO) => Promise<boolean>;
 }) {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState("");
+  const qrContainer = useRef<HTMLDivElement>(null);
+  useEffect(() => { setOrigin(process.env.NEXT_PUBLIC_APP_URL || window.location.origin); }, []);
 
   if (!repayment) return null;
 
   const recipient = group.members.find(
     (member) => member.id === repayment.toMemberId,
   );
-  const link = paypalPaymentLink(
+  const paypalLink = paypalPaymentLink(
     recipient?.paypalAddress,
     repayment.amountCents,
     group.currency,
@@ -45,6 +48,26 @@ export function PaymentLinkModal({
       settlement.recipientId === repayment.toMemberId &&
       settlement.amountCents === repayment.amountCents,
   );
+
+  const sharedCheckout = Boolean(recipient?.paypalAddress?.includes("@"));
+  const link = sharedCheckout
+    ? pending && origin ? `${origin.replace(/\/$/, "")}/pay/${encodeURIComponent(pending.id)}` : null
+    : paypalLink;
+  const downloadQR = () => {
+    const svg = qrContainer.current?.querySelector("svg");
+    if (!svg) return;
+    const picture = new Image();
+    picture.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 736;
+      canvas.getContext("2d")?.drawImage(picture, 0, 0, 736, 736);
+      const anchor = document.createElement("a");
+      anchor.href = canvas.toDataURL("image/png");
+      anchor.download = "repayment-qr.png";
+      anchor.click();
+    };
+    picture.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(svg))}`;
+  };
 
   const close = () => {
     setCopied(false);
@@ -95,7 +118,7 @@ export function PaymentLinkModal({
 
         {link ? (
           <>
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-slate-800 bg-white p-4">
+            <div ref={qrContainer} className="flex flex-col items-center gap-3 rounded-xl border border-slate-800 bg-white p-4">
               <QRCodeSVG
                 value={link}
                 size={184}
@@ -105,7 +128,7 @@ export function PaymentLinkModal({
                 aria-label={`Payment QR code for ${repayment.toName}`}
               />
               <p className="text-center text-[11px] text-slate-600">
-                Scan with a PayPal app or phone camera
+                Scan with a phone camera to open the payment request
               </p>
             </div>
 
@@ -118,24 +141,29 @@ export function PaymentLinkModal({
                 <button className="btn-secondary btn-sm text-xs" onClick={() => void copyLink()}>
                   {copied ? "Copied" : "Copy link"}
                 </button>
+                <button className="btn-secondary btn-sm text-xs" onClick={downloadQR}>Download QR</button>
                 <a
                   className="btn-secondary btn-sm text-xs"
                   href={link}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open PayPal ↗
+                  {sharedCheckout ? "Open payment request ↗" : "Open PayPal ↗"}
                 </a>
               </div>
             </div>
           </>
         ) : (
           <Alert>
-            Add a PayPal.Me handle for {recipient?.displayName ?? "the recipient"}{" "}
-            to share a link. For an email recipient, close this window and use their Pay button.
+            {sharedCheckout
+              ? "This payment request is no longer pending. Close this window to check the updated balance."
+              : `Add a PayPal.Me handle for ${recipient?.displayName ?? "the recipient"} to share a link.`}
           </Alert>
         )}
 
+        {sharedCheckout && /localhost|127\.0\.0\.1/.test(origin) && (
+          <Alert>To scan from another device, open this app using a reachable network or deployed URL before sharing the QR. A localhost link only works on this computer.</Alert>
+        )}
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs">
           <span className={pending ? "text-amber-300" : "text-slate-400"}>
             {pending
@@ -153,7 +181,7 @@ export function PaymentLinkModal({
 
         {pending && (
           <div className="flex flex-wrap gap-2">
-            <button
+            {!sharedCheckout && <button
               className="btn-primary btn-sm text-xs"
               disabled={marking || deleting}
               onClick={() => {
@@ -163,7 +191,7 @@ export function PaymentLinkModal({
               }}
             >
               {marking ? <Spinner /> : null} Mark as paid
-            </button>
+            </button>}
             <button
               className="btn-ghost btn-sm text-xs"
               disabled={marking || deleting}
@@ -185,9 +213,9 @@ export function PaymentLinkModal({
         )}
 
         <p className="text-[11px] leading-relaxed text-slate-500">
-          A link or QR code sends the payer to the recipient&apos;s PayPal. The group
-          balance only changes after you mark the request paid (or after an in-app
-          PayPal capture is confirmed).
+          {sharedCheckout
+            ? `Send this QR code or link to ${repayment.fromName}. They review the recipient and sign in to their own PayPal account. Balances update after PayPal confirms payment.`
+            : "The balance changes after you confirm payment or PayPal capture is confirmed."}
         </p>
       </div>
     </Modal>

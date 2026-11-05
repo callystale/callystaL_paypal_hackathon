@@ -124,6 +124,11 @@ The group pane is an account-less shared-expense ledger for the demo:
   Nguyen paying Mia once clears both legs. Partial payments leave only the remainder;
   excess payments become credit owed back to the actual payer. Pending, processing, failed,
   and cancelled attempts do not reduce debts. Completed transfers remain in settlement history.
+- **Request payment / QR** also works with PayPal email recipients: it opens a shareable
+  app payment page so the debtor can review and pay using their own PayPal account.
+  Copy the link or download the QR as PNG. Share from a reachable deployed/network URL;
+  optionally set `NEXT_PUBLIC_APP_URL` to the public app origin. Localhost QR links do not
+  work on another device. The request dialog refreshes balances while awaiting payment.
 - Checkout validates the payer, recipient, currency, amount, and remaining debt before capture.
   Already-paid or stale requests are rejected. Completed PayPal payments cannot be marked
   manually or deleted from the ledger. Partial PayPal payments can be entered at checkout.

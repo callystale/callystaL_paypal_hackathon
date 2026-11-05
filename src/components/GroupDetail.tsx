@@ -1050,7 +1050,7 @@ export function GroupDetail({
                   (member) => member.id === repayment.toMemberId,
                 );
                 const payLink = paypalPaymentLink(recipient?.paypalAddress, repayment.amountCents, group.currency);
-                const canRequest = Boolean(payLink);
+                const canRequest = Boolean(payLink || memberPaypalEmailSchema.safeParse(recipient?.paypalAddress).success);
                 return (
                   <li
                     key={key}
@@ -1135,7 +1135,7 @@ export function GroupDetail({
                         title={
                           canRequest
                             ? "Create a payment request with a link and QR code"
-                            : "Link and QR sharing require a PayPal.Me handle; use Pay for email recipients"
+                            : "Add the recipient’s PayPal email or PayPal.Me handle first"
                         }
                         onClick={() => onRequestPayment(repayment)}
                       >

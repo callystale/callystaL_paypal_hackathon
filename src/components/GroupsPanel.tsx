@@ -116,6 +116,12 @@ export function GroupsPanel({
     [selectedId],
   );
 
+  useEffect(() => {
+    if (!paymentLinkFor || !selectedId) return;
+    const timer = window.setInterval(() => { void reloadGroup().catch(() => {}); }, 5000);
+    return () => window.clearInterval(timer);
+  }, [paymentLinkFor, selectedId, reloadGroup]);
+
   const runAction = useCallback(
     async (key: string, action: () => Promise<void>): Promise<boolean> => {
       setBusy(key);

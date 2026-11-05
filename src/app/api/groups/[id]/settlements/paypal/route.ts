@@ -70,7 +70,12 @@ export async function POST(
       referenceId: group.id,
     });
 
-    const settlement = await prisma.settlement.create({
+    const linkRequest = group.settlements.find((payment) => payment.status === "PENDING" && !payment.paypalOrderId &&
+      payment.senderId === sender.id && payment.recipientId === recipient.id && payment.amountCents === body.amountCents);
+    const settlement = linkRequest ? await prisma.settlement.update({
+      where: { id: linkRequest.id },
+      data: { paypalOrderId: order.id, note: "PayPal checkout from shared request" },
+    }) : await prisma.settlement.create({
       data: {
         groupId: group.id,
         senderId: sender.id,
