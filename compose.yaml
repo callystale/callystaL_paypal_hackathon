@@ -1,0 +1,26 @@
+services:
+  budgetpal:
+    build: .
+    ports:
+      - "127.0.0.1:${BUDGETPAL_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: file:/data/budgetpal.db
+      TZ: ${BUDGETPAL_TZ:-Asia/Ho_Chi_Minh}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      # The browser receives the client ID from /api/status at runtime.
+      PAYPAL_ENV: sandbox
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_CURRENCY: ${PAYPAL_CURRENCY:-USD}
+      CHANNEL3_API_KEY: ${CHANNEL3_API_KEY:-}
+      CHANNEL3_API_URL: ${CHANNEL3_API_URL:-https://api.trychannel3.com}
+      OLLAMA_BASE_URL: ${DOCKER_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - budgetpal-data:/data
+    restart: unless-stopped
+
+volumes:
+  budgetpal-data:

@@ -8,6 +8,85 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 
 ---
 
+## Run with Docker (judges)
+
+Install [Docker Desktop](https://docs.docker.com/get-started/get-docker/) or Docker Engine with
+Compose, and start the Docker daemon. Clone this repository and run, from the project folder:
+
+```bash
+docker compose up --build
+```
+
+Open <http://localhost:3000>. The first start builds the app, creates a separate SQLite volume,
+and loads sample purchases, wishlist milestones, and two shared-expense groups. Subsequent
+starts retain changes; stopping the containers does not erase the database. If port 3000 is
+already in use, set `BUDGETPAL_PORT=3001` and open `http://localhost:3001` instead. To stop,
+press Ctrl+C, then run `docker compose down`. For the AI option, use
+`docker compose -f compose.yaml -f compose.ai.yaml down` instead.
+
+**To test real AI inference**, use the Ollama option below. It downloads the `llama3.2:3b`
+model on first use and can take several minutes. Allow at least 12 GB of free disk space for
+the container images, dependencies, and model. The app starts after the download completes.
+Model files and the database are stored in named Docker volumes.
+CPU-only inference can be slow.
+
+```bash
+docker compose -f compose.yaml -f compose.ai.yaml up --build
+```
+
+Without the AI option, Docker attempts to reach Ollama on the host at
+`host.docker.internal:11434`; when unavailable, the app uses its explicitly labeled heuristic
+fallback. If you already run Ollama on the host, ensure it accepts connections from Docker,
+then pull `llama3.2:3b` before starting. The AI status indicator checks server availability;
+the model must also be present for inference to work. A different model can be set with
+`OLLAMA_MODEL` in `.env` before starting.
+
+**To test PayPal checkout**, supply Sandbox app credentials in an untracked `.env` file in the
+project root before starting Docker (copy `.env.example` if `.env` does not already exist):
+
+```dotenv
+PAYPAL_CLIENT_ID=your_sandbox_app_client_id
+PAYPAL_CLIENT_SECRET=your_sandbox_app_secret
+```
+
+Use the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/) to obtain the
+Sandbox app credentials and a Sandbox buyer login. Docker always uses PayPal Sandbox. The
+server supplies the public client ID to the browser at runtime; the secret stays server-side.
+The seeded group member addresses are examples, not buyer login credentials. To test a group
+repayment, edit its member emails to match accessible Sandbox accounts and log in as the
+sender shown at checkout. Contact the entrant through the Devpost submission if the dedicated
+judge access details are needed. Do not commit credentials or passwords to the public repo.
+
+**Live product search** additionally requires `CHANNEL3_API_KEY` in `.env`. Without it, the
+app shows labeled demo results with estimated prices, not live product photos or retailer links.
+After changing `.env`, recreate containers with the relevant `docker compose ... up --build`
+command so Compose passes the new settings. `DATABASE_URL` in `.env` is ignored by Docker:
+the container uses its own persistent volume. Set `SEED_DEMO=false` before the first startup
+to start with an empty database. `BUDGETPAL_TZ` changes the container timezone; the default is
+`Asia/Ho_Chi_Minh`.
+
+### Judge walkthrough
+
+1. Review the seeded budget, purchases, and wishlist. In **AI milestones**, select an item or a
+   combination and review the PayPal Sandbox checkout. The payment updates only the selected
+   items after successful capture.
+2. With the AI option running, open **My budget**, use **Ask AI to plan my budget**, answer the
+   questions, and select **Get suggested split**. A model-produced suggestion says “Suggested
+   by your local AI”; “Suggested heuristically” means the app used its fallback. You can also
+   use **Generate plan** or **Regenerate** in **AI milestones**.
+3. Open **Split shared spending**, choose a sample group, and review expenses and suggested
+   repayments. Use **Ask AI about repayments** to ask a question. If Sandbox accounts have been
+   configured, use **Pay with PayPal** and confirm the updated balance after capture.
+4. Open **Find cheaper** on a wishlist item. With Channel3 configured it can show live product
+   offers; otherwise it explains that the results are estimates.
+
+For a clean sample database, first stop the app and explicitly remove the Docker volume with
+`docker compose down -v`. **This deletes the Docker demo database.** Run the startup command
+again to reseed it. If using the AI option, `docker compose -f compose.yaml -f compose.ai.yaml
+down -v` also deletes the downloaded model volume.
+
+---
+
 ## The workflow
 
 | Step | What happens | Where in the UI |
@@ -17,7 +96,7 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 | 3. Set up a budget | Choose spending categories and set a budget for each — or skip budgets and just track spending. | **Budget** panel |
 | 4. Build a purchase plan | Add desired items with optional priority, target date, or max price. The AI groups them into affordable milestones based on your budget and priorities. | **Desired items** + **AI milestones** |
 | 5. Find lower-cost options | For each planned item, the app searches similar products and compares price, availability, and fit. Swap an item into your plan in one click. | **Find cheaper** → alternatives modal |
-| 6. Pay when ready | Select a milestone, review the total, and approve a PayPal checkout. Items are marked purchased after capture. | **Check out this milestone** |
+| 6. Pay when ready | Select one item, any combination, a milestone, or all unpaid items. Review and approve checkout; only captured items are marked purchased. | **AI milestones** → **Pay selected** |
 | 7. Split group spending | Create a group, add members by PayPal email, record shared expenses, and see net balances plus a simplified repayment plan. Mark repayments settled manually or pay them with PayPal Sandbox. | **Groups** panel |
 
 ---
@@ -37,16 +116,16 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 
 Everything degrades gracefully: if Ollama is offline the app uses a heuristic planner, and if
 Channel3 has no key it uses the fallback catalogue. PayPal checkout is the only feature that
-requires real credentials.
+requires PayPal Sandbox credentials.
 
 ---
 
-## Getting started
+## Run without Docker
 
 ### Prerequisites
 
-- Node.js 20+
-- [Ollama](https://ollama.com) running locally with a chat model pulled:
+- Node.js 22 (the seed command uses Node’s `--env-file-if-exists` option)
+- Optional for live AI: [Ollama](https://ollama.com) running locally with a chat model pulled:
   ```bash
   ollama pull llama3.2:3b
   ollama serve   # usually already running after install
@@ -227,7 +306,7 @@ spending (60% of the remaining headroom), so plans stay realistic.
 ```
 prisma/
   schema.prisma        Settings, Category, Purchase, wishlist, Order, and group-split models
-  seed.ts              Sample data (including the Lake trip group)
+  seed.ts              Sample budgets, wishlist items, and two groups
 src/
   app/
     page.tsx           Dashboard entry
