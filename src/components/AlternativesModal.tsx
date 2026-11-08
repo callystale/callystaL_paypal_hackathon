@@ -4,6 +4,21 @@ import { useEffect, useState } from "react";
 import { api, type AlternativesResponse, type ItemDTO, type SummaryDTO } from "@/lib/client";
 import { Alert, Modal, Money, Spinner } from "./ui";
 
+function ProductPhoto({ src, title }: { src?: string; title: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white p-2">
+      {src && !failed ? (
+        // Retailer image hosts vary, so render the provider URL directly.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={title} className="h-full w-full object-contain" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+      ) : (
+        <span className="text-center text-xs text-slate-500">Photo unavailable</span>
+      )}
+    </div>
+  );
+}
+
 export function AlternativesModal({
   item,
   summary,
@@ -27,11 +42,13 @@ export function AlternativesModal({
     setData(null);
     setError(null);
     setLoading(true);
+    let active = true;
     api
       .post<AlternativesResponse>("/api/alternatives", { itemId: item.id })
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : "Search failed"))
-      .finally(() => setLoading(false));
+      .then((result) => { if (active) setData(result); })
+      .catch((e) => { if (active) setError(e instanceof Error ? e.message : "Search failed"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, [item]);
 
   const swap = async (alt: AlternativesResponse["alternatives"][number]) => {
@@ -70,7 +87,7 @@ export function AlternativesModal({
           {data.source === "fallback" && (
             <div className="mb-3">
               <Alert kind="info">
-                Showing the built-in fallback catalogue. Add a CHANNEL3_API_KEY for live retailers.
+                Demo options with estimated prices. Live product photos and retailer prices are unavailable.
               </Alert>
             </div>
           )}
@@ -80,9 +97,14 @@ export function AlternativesModal({
                 key={`${alt.title}-${alt.merchant}`}
                 className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 p-3"
               >
+                <ProductPhoto key={alt.imageUrl ?? alt.title} src={alt.imageUrl} title={alt.title} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{alt.title}</p>
-                  <p className="truncate text-xs text-slate-400">{alt.reason}</p>
+                  <p className="text-sm font-medium">{alt.title}</p>
+                  <p className="mt-1 text-lg font-semibold">
+                    <Money amount={alt.price} currency={alt.currency} />
+                    {data.source === "fallback" && <span className="ml-2 text-xs font-normal text-slate-400">estimated</span>}
+                  </p>
+                  <p className="text-xs text-slate-400">{alt.reason}</p>
                   <p className="mt-0.5 text-xs text-slate-400">
                     {alt.merchant} · {alt.availability}
                     {alt.savings > 0 && (
@@ -97,17 +119,14 @@ export function AlternativesModal({
                     )}
                   </p>
                 </div>
-                <span className="text-sm font-semibold">
-                  <Money amount={alt.price} currency={alt.currency} />
-                </span>
-                {alt.url && (
+                {alt.url && data.source !== "fallback" && (
                   <a
                     href={alt.url}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost text-xs"
                   >
-                    View
+                    View at retailer ↗
                   </a>
                 )}
                 <button

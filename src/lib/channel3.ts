@@ -31,7 +31,7 @@ interface Channel3RawProduct {
   id?: string;
   title?: string;
   brand?: { name?: string } | string;
-  images?: Array<{ url?: string }>;
+  images?: Array<{ url?: string; cleaned_url?: string | null; is_main_image?: boolean }>;
   offers?: Channel3RawOffer[];
 }
 
@@ -74,7 +74,9 @@ function normalize(raw: Channel3RawProduct): ProductResult | null {
         merchant: domain,
         domain,
         price,
-        currency: o.currency || "USD",
+        currency: o.currency ||
+          (o.price && typeof o.price === "object" && "currency" in o.price &&
+          typeof o.price.currency === "string" ? o.price.currency : "USD"),
         availability: o.availability || "Unknown",
         url: o.url || "",
       } satisfies ProductOffer;
@@ -88,7 +90,10 @@ function normalize(raw: Channel3RawProduct): ProductResult | null {
     id: raw.id || Math.random().toString(36).slice(2),
     title: raw.title || "Untitled product",
     brand: typeof raw.brand === "string" ? raw.brand : raw.brand?.name,
-    imageUrl: raw.images?.[0]?.url,
+    imageUrl: (() => {
+      const image = raw.images?.find((image) => image.is_main_image) ?? raw.images?.[0];
+      return image?.cleaned_url || image?.url;
+    })(),
     offers,
     bestOffer: offers[0],
   };

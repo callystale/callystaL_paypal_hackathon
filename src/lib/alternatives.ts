@@ -3,6 +3,7 @@ import { ollamaJson, type ChatMessage } from "./ollama";
 
 export interface Alternative {
   title: string;
+  imageUrl?: string;
   price: number;
   currency: string;
   merchant: string;
@@ -28,12 +29,13 @@ export async function findAlternatives(input: {
   });
 
   const candidates = products
-    .map((p) => {
+    .map((p): Alternative | null => {
       const offer = p.bestOffer;
       if (!offer) return null;
       const savings = Math.round((input.targetPrice - offer.price) * 100) / 100;
       return {
         title: p.title,
+        imageUrl: p.imageUrl,
         price: offer.price,
         currency: offer.currency,
         merchant: offer.merchant,

@@ -115,6 +115,10 @@ The group pane is an account-less shared-expense ledger for the demo:
 - Record an expense with a description, total, payer, date, and participants. The total is split
   equally; leftover cents are assigned one at a time, deterministically, so the shares always
   sum to the expense total.
+- The repayment breakdown shows the original expense shares, recorded payments and corrections,
+  member balances, and suggested transfers. When traceable, it explains payments made on
+  another person’s behalf and offsetting debts. Ask a question to have the local AI select
+  relevant calculated facts; if it is unavailable, the app shows the full calculation.
 - Each member's net balance is `paid - own shares + settlements sent - settlements received`.
   A greedy creditor/debtor match produces a short repayment plan.
 - Use **Reverse direction** on an unpaid suggested repayment to swap who owes whom.

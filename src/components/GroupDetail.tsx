@@ -13,6 +13,7 @@ import { fromCents, settlementLocksExpenses, splitEqually, toCents } from "@/lib
 import { memberPaypalEmailSchema } from "@/lib/group-member";
 import { paypalPaymentLink, settlementReferenceLabel } from "@/lib/payment-link";
 import { DebtArrow, EmptyState, Modal, Money, Spinner } from "./ui";
+import { RepaymentExplanation } from "./RepaymentExplanation";
 
 export interface ExpenseInput {
   description: string;
@@ -1027,6 +1028,7 @@ export function GroupDetail({
               arrow → points to who is owed
             </span>
           </div>
+          <RepaymentExplanation group={group} />
           {group.repayments.length === 0 ? (
             <EmptyState>
               {group.expenses.length === 0
