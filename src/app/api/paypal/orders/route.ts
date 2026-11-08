@@ -7,7 +7,10 @@ import { createOrder, paypalConfigured } from "@/lib/paypal";
 
 export const dynamic = "force-dynamic";
 
-const schema = z.object({ milestoneId: z.string().min(1) });
+const schema = z.union([
+  z.object({ itemIds: z.array(z.string().min(1)).min(1).max(100) }),
+  z.object({ milestoneId: z.string().min(1) }),
+]);
 
 export async function POST(request: Request) {
   try {
@@ -18,16 +21,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const { milestoneId } = schema.parse(await request.json());
-
-    const milestone = await prisma.milestone.findUnique({
-      where: { id: milestoneId },
-      include: { items: true },
+    const selection = schema.parse(await request.json());
+    const ids = "itemIds" in selection ? [...new Set(selection.itemIds)] : null;
+    const items = await prisma.desiredItem.findMany({
+      where: ids ? { id: { in: ids } } : { milestoneId: "milestoneId" in selection ? selection.milestoneId : "" },
     });
-    if (!milestone) return bad("Milestone not found", 404);
-    if (milestone.items.length === 0) return bad("Milestone has no items", 400);
+    if (!items.length || (ids && items.length !== ids.length)) return bad("Selected items not found", 404);
+    if (items.some((item) => item.purchased || !item.milestoneId)) {
+      return bad("Select unpaid items from your current plan", 409);
+    }
+    const milestoneIds = [...new Set(items.map((item) => item.milestoneId!))];
+    const milestone = milestoneIds.length === 1
+      ? await prisma.milestone.findUnique({ where: { id: milestoneIds[0] } }) : null;
+    const title = milestone?.title ?? "Selected plan items";
+    const checkoutItems = JSON.stringify(items.map((item) => ({
+      id: item.id, name: item.alternativeName ?? item.name,
+      amount: itemEffectivePrice(item), category: item.category, milestoneId: item.milestoneId,
+    })));
 
-    const lines = milestone.items.map((item) => ({
+    const lines = items.map((item) => ({
       name: item.alternativeName ? `${item.name} (alt: ${item.alternativeName})` : item.name,
       amount: itemEffectivePrice(item),
     }));
@@ -38,16 +50,17 @@ export async function POST(request: Request) {
     const order = await createOrder({
       amount: total,
       currency: currencyCode,
-      description: `Budget planner — ${milestone.title}`,
-      referenceId: milestone.id,
+      description: `Budget planner — ${title}`,
+      referenceId: milestone?.id,
       lines,
     });
 
     await prisma.order.create({
       data: {
         paypalOrderId: order.id,
-        milestoneId: milestone.id,
-        milestoneTitle: milestone.title,
+        milestoneId: milestone?.id ?? null,
+        milestoneTitle: title,
+        checkoutItems,
         amount: total,
         currency: currencyCode,
         status: order.status,
@@ -59,8 +72,8 @@ export async function POST(request: Request) {
       status: order.status,
       amount: total,
       currency: currencyCode,
-      milestoneId: milestone.id,
-      milestoneTitle: milestone.title,
+      milestoneId: milestone?.id ?? null,
+      milestoneTitle: title,
       lines,
     });
   } catch (error) {

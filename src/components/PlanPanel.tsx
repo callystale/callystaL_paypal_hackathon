@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api, type MilestoneDTO, type PlanResponse, type StatusDTO, type SummaryDTO } from "@/lib/client";
 import type { SpendingAnalysisResponse } from "@/lib/spending";
+import { round2 } from "@/lib/money";
 import { PeriodFilter } from "./PeriodFilter";
 import { SpendingAnalysisModal } from "./SpendingAnalysisModal";
 import { EmptyState, Money, PriorityBadge, Spinner } from "./ui";
@@ -24,6 +25,7 @@ export function PlanPanel({
   period: number;
   onPeriodChange: (period: number) => void;
 }) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -31,6 +33,18 @@ export function PlanPanel({
   const [analysis, setAnalysis] = useState<SpendingAnalysisResponse | null>(null);
   const currencyCode = summary?.currency ?? "USD";
   const milestones = plan?.milestones ?? [];
+
+  const unpaid = milestones.flatMap((m) => m.items).filter((item) => !item.purchased);
+  const selected = unpaid.filter((item) => selectedIds.includes(item.id));
+  const checkout = (items: MilestoneDTO["items"], milestone?: MilestoneDTO) => {
+    if (!items.length) return;
+    onCheckout({
+      id: milestone?.id ?? "selection", title: milestone?.title ?? "Selected plan items",
+      rationale: null, sequence: 0, status: "PLANNED", items,
+      total: round2(items.reduce((sum, item) => sum + item.effectivePrice, 0)),
+    });
+  };
+  const toggle = (id: string) => setSelectedIds((ids) => ids.includes(id) ? ids.filter((value) => value !== id) : [...ids, id]);
 
   const generate = async () => {
     setGenerating(true);
@@ -115,7 +129,16 @@ export function PlanPanel({
           milestones you can afford, respecting priority and target dates.
         </EmptyState>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div>
+          <p className="mb-3 text-sm text-slate-400">Choose one item, combine items across milestones, or pay for all unpaid items together.</p>
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 p-3">
+            <button className="btn-secondary" onClick={() => setSelectedIds(unpaid.map((item) => item.id))} disabled={!unpaid.length}>Select all</button>
+            <button className="btn-ghost" onClick={() => setSelectedIds([])} disabled={!selected.length}>Clear selection</button>
+            <span className="text-sm" aria-live="polite">{selected.length} selected · <Money amount={round2(selected.reduce((sum, item) => sum + item.effectivePrice, 0))} currency={currencyCode} /></span>
+            <button className="btn-primary" disabled={!selected.length} onClick={() => checkout(selected)}>Pay selected</button>
+            <button className="btn-secondary" disabled={!unpaid.length} onClick={() => checkout(unpaid)}>Pay all together</button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {milestones.map((m) => (
             <article
               key={m.id}
@@ -135,26 +158,28 @@ export function PlanPanel({
               {m.rationale && <p className="mb-3 text-xs text-slate-400">{m.rationale}</p>}
               <ul className="mb-3 flex-1 space-y-1.5">
                 {m.items.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="flex items-center gap-1.5 truncate">
-                      <PriorityBadge priority={item.priority} />
-                      <span className="truncate">{item.alternativeName ?? item.name}</span>
-                    </span>
-                    <span className="text-slate-400">
-                      <Money amount={item.effectivePrice} currency={currencyCode} />
-                    </span>
+                  <li key={item.id} className="rounded-lg border border-slate-700 p-3 text-sm">
+                    <label className="flex cursor-pointer items-start gap-2">
+                      <input type="checkbox" className="mt-1 accent-indigo-500" checked={!item.purchased && selectedIds.includes(item.id)} disabled={item.purchased} onChange={() => toggle(item.id)} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium">{item.alternativeName ?? item.name}</span>
+                        <span className="mt-1 flex items-center gap-2"><PriorityBadge priority={item.priority} /><Money amount={item.effectivePrice} currency={currencyCode} /></span>
+                      </span>
+                    </label>
+                    <button className="btn-ghost mt-2 w-full text-xs" disabled={item.purchased} onClick={() => checkout([item], m)}>{item.purchased ? "Paid ✓" : "Pay this item"}</button>
                   </li>
                 ))}
               </ul>
               <button
                 className="btn-primary w-full"
-                onClick={() => onCheckout(m)}
-                disabled={m.status === "COMPLETED"}
+                onClick={() => checkout(m.items.filter((item) => !item.purchased), m)}
+                disabled={m.items.every((item) => item.purchased)}
               >
-                {m.status === "COMPLETED" ? "Paid ✓" : "Check out this milestone"}
+                {m.items.every((item) => item.purchased) ? "Paid ✓" : "Pay remaining in milestone"}
               </button>
             </article>
           ))}
+          </div>
         </div>
       )}
 

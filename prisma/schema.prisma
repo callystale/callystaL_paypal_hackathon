@@ -92,6 +92,8 @@ model Order {
   paypalOrderId  String     @unique
   milestoneId    String?
   milestoneTitle String?
+  /// Immutable item selection and prices approved at checkout (JSON).
+  checkoutItems  String?
   amount         Float
   currency       String     @default("USD")
   status         String     @default("CREATED")

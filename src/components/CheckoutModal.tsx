@@ -80,7 +80,7 @@ export function CheckoutModal({
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-slate-400">
-                The AI planned this milestone. You approve the final payment.
+                Only the items listed above will be included in this payment.
               </p>
               <PayPalScriptProvider
                 options={{ clientId, currency: currencyCode, intent: "capture" }}
@@ -93,7 +93,7 @@ export function CheckoutModal({
                     setBusy(true);
                     try {
                       const order = await api.post<OrderResponse>("/api/paypal/orders", {
-                        milestoneId: milestone.id,
+                        itemIds: milestone.items.map((item) => item.id),
                       });
                       return order.orderId;
                     } catch (e) {

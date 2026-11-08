@@ -35,9 +35,8 @@ export function Dashboard() {
     setToast(
       `Payment ${result.status.toLowerCase()}${result.captureId ? ` (${result.captureId})` : ""}.`,
     );
-    const paidId = result.milestoneId;
     await refresh();
-    if (paidId) setCheckoutFor(null);
+    if (result.status === "COMPLETED") setCheckoutFor(null);
   };
 
   if (loading) {
@@ -195,6 +194,7 @@ export function Dashboard() {
             onClose={() => setAlternativesFor(null)}
           />
           <CheckoutModal
+            key={checkoutFor ? checkoutFor.items.map((item) => item.id).join("-") : "closed"}
             milestone={checkoutFor}
             status={status}
             summary={summary}

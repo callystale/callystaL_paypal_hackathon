@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/group.test.ts src/lib/group-member.test.ts src/lib/paypal.test.ts src/lib/repayment-explanation.test.ts",
+    "test": "node --import tsx --test src/lib/group.test.ts src/lib/group-member.test.ts src/lib/paypal.test.ts src/lib/repayment-explanation.test.ts src/lib/checkout.test.ts",
     "db:push": "prisma db push",
     "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
     "db:reset": "prisma db push --force-reset --skip-generate && npm run db:seed",
