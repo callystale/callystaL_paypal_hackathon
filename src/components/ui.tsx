@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { formatCurrency } from "@/lib/money";
 
 export function Money({
@@ -78,6 +79,7 @@ export function Modal({
 }) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{
     pointerId: number;
@@ -87,21 +89,24 @@ export function Modal({
     originY: number;
   } | null>(null);
 
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     if (!open) setOffset({ x: 0, y: 0 });
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !mounted) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      const dialogs = document.querySelectorAll('[aria-modal="true"]');
+      if (e.key === "Escape" && dialogs[dialogs.length - 1] === dialogRef.current) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, mounted, onClose]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !mounted) return;
     const previousFocus = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
     dialog?.focus();
@@ -118,7 +123,7 @@ export function Modal({
     };
     document.addEventListener("keydown", trapFocus);
     return () => { document.removeEventListener("keydown", trapFocus); if (previousFocus?.isConnected) previousFocus.focus(); };
-  }, [open]);
+  }, [open, mounted]);
 
   const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!draggable) return;
@@ -150,11 +155,13 @@ export function Modal({
     }
   };
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  // Escape sticky/scrolling panel stacking contexts so every dialog covers
+  // the notebook tabs and the entire split layout at every screen size.
+  return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center ${
+      className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 ${
         dim ? "bg-[#302b23]/35 backdrop-blur-[2px]" : "bg-transparent"
       }`}
       onMouseDown={(e) => {
@@ -167,7 +174,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`notebook-dialog my-8 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl border border-paper-line bg-paper-page p-5 sm:p-7`}
+        className={`notebook-dialog my-4 w-full sm:my-auto ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl border border-paper-line bg-paper-page p-5 sm:p-7`}
         style={draggable ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
       >
         <div
@@ -193,7 +200,8 @@ export function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
