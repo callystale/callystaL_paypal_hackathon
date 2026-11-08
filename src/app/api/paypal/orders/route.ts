@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const order = await createOrder({
       amount: total,
       currency: currencyCode,
-      description: `Budget planner — ${title}`,
+      description: `BudgetPal — ${title}`,
       referenceId: milestone?.id,
       lines,
     });

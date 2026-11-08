@@ -1,4 +1,4 @@
-# Budget Planner
+# BudgetPal
 
 Set up a monthly budget with AI help, record spending, and let a locally-run AI turn your
 wishlist into **affordable milestones**. For each planned item the app finds cheaper

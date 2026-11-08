@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Budget Planner — plan smarter, pay with PayPal",
+  title: "BudgetPal — plan smarter, pay with PayPal",
   description:
     "Set category budgets, track spending, and let a local AI stage your wishlist into affordable milestones you approve and pay for with PayPal.",
 };

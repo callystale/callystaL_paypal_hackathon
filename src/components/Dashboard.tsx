@@ -70,7 +70,7 @@ export function Dashboard() {
             </div>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="notebook-title"><span className="notebook-highlight">Budget Planner</span></h1>
+                <h1 className="notebook-title"><span className="notebook-highlight">BudgetPal</span></h1>
                 <p className="notebook-note mb-2 mt-1 text-base">A little planning. More room for what matters.</p>
                 <p className="mt-1 max-w-2xl text-sm text-ink-muted">
                   Set up your monthly budget, record spending, and let a locally-run AI stage

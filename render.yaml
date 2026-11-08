@@ -1,11 +1,11 @@
-# Render blueprint for the Budget Planner.
+# Render blueprint for the BudgetPal.
 #
 # A persistent disk keeps the SQLite database across deploys. Disks require a
 # paid instance type (Starter or above); swap for a managed Postgres by changing
 # the Prisma datasource provider if you prefer.
 services:
   - type: web
-    name: budget-planner
+    name: budgetpal
     runtime: node
     plan: starter
     region: oregon
