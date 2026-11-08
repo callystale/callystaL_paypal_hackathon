@@ -29,10 +29,10 @@ export function PeriodFilter({
   const previous = periodBounds(now, startDay, PERIOD_PREVIOUS);
 
   return (
-    <label className={`flex items-center gap-2 text-xs text-slate-400 ${className}`}>
+    <label className={`flex items-center gap-2 text-xs text-ink-muted ${className}`}>
       <span className="whitespace-nowrap">{label}</span>
       <select
-        className="rounded-md border border-slate-700 bg-slate-950/60 px-2 py-1 text-xs text-slate-200 outline-none focus:border-brand-400"
+        className="rounded-md border border-paper-line bg-paper-base/60 px-2 py-1 text-xs text-ink outline-none focus:border-brand-400"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label={`${label} filter`}

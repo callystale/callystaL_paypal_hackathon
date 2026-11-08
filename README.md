@@ -158,17 +158,25 @@ Settlement     group, sender, recipient, amountCents, status, PayPal reference
 
 ### Demo walkthrough
 
-`npm run db:seed` resets the sample data and creates a **Lake trip** group with three members:
+`npm run db:seed` adds sample data without deleting or overwriting existing records. It can be
+run repeatedly without duplicating the same records. `npm run db:reset` remains the explicit
+command for a clean database reset.
 
-| Expense | Paid by | Total | Split |
-| ------- | ------- | ----- | ----- |
-| Cabin rental | You | $300.00 | $100.00 each |
-| Groceries for the cabin | Maya | $86.47 | $28.83 + $28.82 + $28.82 |
+The notebook sample includes:
 
-The seeded balances are therefore **You are owed $171.18**, Maya owes **$42.36**, and Leo owes
-**$128.82**. The suggested plan is Leo → You $128.82 and Maya → You $42.36. The groceries expense
-also has You's $28.82 share linked to a personal **Groceries** purchase — open the Purchases
-panel to confirm the whole $86.47 was not imported.
+- Purchases across the current and previous payday periods, with groceries, dining, transport,
+  daily essentials, rent, savings, giving, and travel. Existing budgets and spending are respected;
+  sample purchases only fill the remaining room in each category.
+- Six wishlist items with target dates and three ready-to-review milestones.
+- **Da Lat weekend · sample** and **Sunday dinner club · sample**, using **You**, **Mia**, and
+  **Nguyen** and their existing saved PayPal accounts. On an empty database, the same sandbox
+  account identities are used.
+- Multiple payers, cent-exact shared expenses, and a clearly labeled sample manual repayment.
+  Seeding never calls PayPal or creates a real payment.
+
+Dates follow the configured budget start day in the Asia/Ho_Chi_Minh timezone. Use `SEED_DATE`
+(an ISO timestamp) to make a sample run reproducible. Existing income, goals, groups, payment
+history, and edited sample records remain unchanged.
 
 1. Create a group and add members.
 2. Record expenses paid by different members, including an amount that leaves a cent remainder.

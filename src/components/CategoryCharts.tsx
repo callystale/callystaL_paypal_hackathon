@@ -4,7 +4,7 @@ import type { CategoryDTO } from "@/lib/client";
 import { formatCurrency } from "@/lib/money";
 import { Money } from "./ui";
 
-const FALLBACK_COLORS = ["#6366f1", "#22c55e", "#f97316", "#06b6d4", "#ec4899", "#8b5cf6", "#eab308"];
+const FALLBACK_COLORS = ["#829877", "#9fafa1", "#c69c80", "#8daab1", "#bf919e", "#a59aba", "#c3b270"];
 
 function colorFor(category: CategoryDTO, index: number) {
   return category.color || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
@@ -36,14 +36,14 @@ export function SpendingCharts({
 
   if (slices.length === 0) {
     return (
-      <p className="mb-4 rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-2.5 text-sm text-slate-400">
+      <p className="mb-4 rounded-xl border border-dashed border-paper-line bg-paper-base/40 px-4 py-2.5 text-sm text-ink-muted">
         Record spending in Step 2 to see where your money goes.
       </p>
     );
   }
 
   return (
-    <div className="mb-4 grid gap-4 border-b border-slate-800 pb-4 sm:grid-cols-2">
+    <div className="mb-4 grid gap-4 border-b border-paper-line pb-4 sm:grid-cols-2">
       <div>
         <h3 className="label mb-2">Spending mix</h3>
         <CategoryPieChart categories={slices} currency={currency} />
@@ -106,11 +106,11 @@ function CategoryPieChart({
                 {categories[0].name}: {formatCurrency(categories[0].spent, currency)} (100%)
               </title>
             </circle>
-            <circle cx={CENTER} cy={CENTER} r={INNER} fill="#0f172a" />
+            <circle cx={CENTER} cy={CENTER} r={INNER} fill="#fffcf5" />
           </>
         ) : (
           arcs.map(({ category, d, color }) => (
-            <path key={category.id} d={d} fill={color} stroke="#0f172a" strokeWidth="1.5">
+            <path key={category.id} d={d} fill={color} stroke="#fffcf5" strokeWidth="1.5">
               <title>
                 {category.name}: {formatCurrency(category.spent, currency)} (
                 {percentLabel(category.spent, total)})
@@ -141,9 +141,9 @@ function CategoryPieChart({
                 className="inline-block h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: colorFor(category, index) }}
               />
-              <span className="truncate text-slate-300">{category.name}</span>
+              <span className="truncate text-ink-soft">{category.name}</span>
             </span>
-            <span className="shrink-0 tabular-nums text-slate-500">
+            <span className="shrink-0 tabular-nums text-ink-muted">
               {percentLabel(category.spent, total)}
             </span>
           </li>
@@ -172,15 +172,15 @@ function TopSpentChart({
           <li key={category.id}>
             <div className="flex items-center justify-between gap-2 text-[11px] leading-4">
               <span className="flex min-w-0 items-center gap-1.5">
-                <span className="w-3 shrink-0 tabular-nums text-slate-500">{index + 1}</span>
-                <span className="truncate font-medium text-slate-300">{category.name}</span>
+                <span className="w-3 shrink-0 tabular-nums text-ink-muted">{index + 1}</span>
+                <span className="truncate font-medium text-ink-soft">{category.name}</span>
               </span>
-              <span className="shrink-0 tabular-nums text-slate-400">
+              <span className="shrink-0 tabular-nums text-ink-muted">
                 <Money amount={category.spent} currency={currency} />{" "}
-                <span className="text-slate-500">{percentLabel(category.spent, total)}</span>
+                <span className="text-ink-muted">{percentLabel(category.spent, total)}</span>
               </span>
             </div>
-            <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+            <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-paper-inset">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -193,7 +193,7 @@ function TopSpentChart({
         );
       })}
       {categories.length > top.length && (
-        <li className="text-[11px] leading-4 text-slate-500">
+        <li className="text-[11px] leading-4 text-ink-muted">
           +{categories.length - top.length} more with spending
         </li>
       )}

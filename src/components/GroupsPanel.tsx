@@ -521,13 +521,13 @@ export function GroupsPanel({
 
   return (
     <section className="card p-5">
-      <header className="sticky -top-5 z-10 -mx-5 -mt-5 mb-4 flex flex-wrap items-start justify-between gap-3 rounded-t-2xl border-b border-slate-800 bg-slate-900 px-5 py-4">
+      <header className="sticky -top-5 z-10 -mx-5 -mt-5 mb-4 flex flex-wrap items-start justify-between gap-3 rounded-t-2xl border-b border-paper-line bg-paper-page px-5 py-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Shared spending
           </p>
           <h2 className="text-lg font-semibold">Groups</h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-ink-muted">
             Split shared expenses and settle up. Only your own share can be copied into the
             personal budget.
           </p>
@@ -579,7 +579,7 @@ export function GroupsPanel({
       )}
 
       {creating && (
-        <div className="mb-4 rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+        <div className="mb-4 rounded-xl border border-paper-line bg-paper-base/40 p-3">
           <div className="grid gap-2 sm:grid-cols-2">
             <input
               className="input sm:col-span-2"
@@ -666,7 +666,7 @@ export function GroupsPanel({
               </button>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] text-slate-500">
+          <p className="mt-1.5 text-[11px] text-ink-muted">
             Your display name becomes the member marked &quot;you&quot;. The optional PayPal
             address lets people request or send your share with a link or QR code.
           </p>
@@ -674,7 +674,7 @@ export function GroupsPanel({
       )}
 
       {loading ? (
-        <p className="flex items-center gap-2 py-4 text-sm text-slate-400">
+        <p className="flex items-center gap-2 py-4 text-sm text-ink-muted">
           <Spinner /> Loading groups…
         </p>
       ) : (
@@ -691,16 +691,17 @@ export function GroupsPanel({
                       setError(null);
                       setNotice(null);
                     }}
+                    aria-pressed={active}
                     className={`shrink-0 rounded-lg border px-3 py-1.5 text-left text-sm transition ${
                       active
-                        ? "border-brand-500 bg-brand-500/10 text-brand-100"
-                        : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-700"
+                        ? "border-brand-500 bg-brand-500/10 text-brand-800"
+                        : "border-paper-line bg-paper-base/40 text-ink-soft hover:border-paper-line"
                     }`}
                   >
                     <span className="block max-w-[12rem] truncate font-medium">
                       {group.name}
                     </span>
-                    <span className="block text-[11px] text-slate-400">
+                    <span className="block text-[11px] text-ink-muted">
                       {group.currency} · {group.memberCount} member
                       {group.memberCount === 1 ? "" : "s"} · {group.expenseCount} expense
                       {group.expenseCount === 1 ? "" : "s"}
@@ -712,7 +713,7 @@ export function GroupsPanel({
           )}
 
           {detailLoading && !detail ? (
-            <p className="flex items-center gap-2 py-8 text-sm text-slate-400">
+            <p className="flex items-center gap-2 py-8 text-sm text-ink-muted">
               <Spinner /> Loading group…
             </p>
           ) : detail ? (

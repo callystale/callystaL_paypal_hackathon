@@ -25,7 +25,7 @@ export function BudgetPanel({
   };
 
   return (
-    <section className="card">
+    <section id="categories" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
@@ -45,7 +45,7 @@ export function BudgetPanel({
               <div className="font-semibold">
                 <Money amount={summary.totals.spent} currency={currencyCode} /> spent
               </div>
-              <div className="text-slate-400">
+              <div className="text-ink-muted">
                 of <Money amount={summary.totals.budget} currency={currencyCode} /> budget
               </div>
             </div>
@@ -57,7 +57,7 @@ export function BudgetPanel({
         <SpendingCharts categories={summary.categories} currency={currencyCode} />
       )}
 
-      <div className="divide-y divide-slate-800">
+      <div className="divide-y divide-paper-line">
         {summary?.categories.map((c) => {
           const over = c.remaining != null && c.remaining < 0;
           return (
@@ -70,7 +70,7 @@ export function BudgetPanel({
                   />
                   <span className="truncate">{c.name}</span>
                   <span
-                    className="shrink-0 text-[11px] font-normal text-slate-500"
+                    className="shrink-0 text-[11px] font-normal text-ink-muted"
                     title={`${c.purchaseCount} purchase${c.purchaseCount === 1 ? "" : "s"}`}
                   >
                     {c.purchaseCount}×
@@ -78,7 +78,7 @@ export function BudgetPanel({
                 </span>
                 <span className="flex shrink-0 items-center gap-1.5 text-sm">
                   <Money amount={c.spent} currency={currencyCode} />
-                  <span className="text-slate-500">/</span>
+                  <span className="text-ink-muted">/</span>
                   <input
                     type="number"
                     min="0"
@@ -88,7 +88,7 @@ export function BudgetPanel({
                       const next = e.target.value;
                       if (String(c.budget ?? "") !== next) updateBudget(c.id, next);
                     }}
-                    className="w-20 rounded-md border border-slate-700 px-1.5 py-0.5 text-right text-xs outline-none focus:border-brand-400"
+                    className="w-20 rounded-md border border-paper-line px-1.5 py-0.5 text-right text-xs outline-none focus:border-brand-400"
                   />
                   <button
                     className="btn-ghost invisible px-1 py-0.5 group-hover:visible"
@@ -106,7 +106,7 @@ export function BudgetPanel({
                   </div>
                   <span
                     className={`shrink-0 text-[11px] tabular-nums ${
-                      over ? "text-rose-400" : "text-slate-400"
+                      over ? "text-rose-400" : "text-ink-muted"
                     }`}
                   >
                     <Money
@@ -121,7 +121,7 @@ export function BudgetPanel({
           );
         })}
         {summary && summary.categories.length === 0 && (
-          <p className="text-sm text-slate-400">No categories yet. Add them in Step 1.</p>
+          <p className="text-sm text-ink-muted">No categories yet. Add them in Step 1.</p>
         )}
       </div>
     </section>

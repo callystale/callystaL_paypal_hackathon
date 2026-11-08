@@ -90,14 +90,14 @@ export function CalendarPanel({
   };
 
   return (
-    <section className="card">
+    <section id="calendar" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Spending calendar
           </p>
           <h2 className="text-lg font-semibold">{heading}</h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-ink-muted">
             {shortDate(start, start.getFullYear() !== today.getFullYear())} –{" "}
             {shortDate(addDays(periodEnd, -1), start.getFullYear() !== today.getFullYear())}
             {" · "}
@@ -112,10 +112,10 @@ export function CalendarPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-slate-400">
+          <label className="flex items-center gap-2 text-xs text-ink-muted">
             Month starts on
             <select
-              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200"
+              className="rounded-md border border-paper-line px-2 py-1 text-xs text-ink"
               value={startDay}
               onChange={(e) => changeStartDay(e.target.value)}
             >
@@ -150,7 +150,7 @@ export function CalendarPanel({
         </div>
       </header>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium uppercase tracking-wide text-slate-400">
+      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium uppercase tracking-wide text-ink-muted">
         {WEEKDAYS.map((w) => (
           <div key={w} className="py-1">
             {w}
@@ -175,8 +175,8 @@ export function CalendarPanel({
               aria-label={`${shortDate(d, true)}: ${
                 spent > 0 ? `${formatCurrency(spent, currencyCode)} spent` : "no spending"
               }`}
-              className={`flex min-h-[64px] w-full flex-col rounded-lg border p-1.5 text-left transition hover:border-slate-500 ${
-                isToday ? "border-brand-400 ring-1 ring-brand-500/40" : "border-slate-800"
+              className={`flex min-h-[64px] w-full flex-col rounded-lg border p-1.5 text-left transition hover:border-ink-muted ${
+                isToday ? "border-brand-400 ring-1 ring-brand-500/40" : "border-paper-line"
               }`}
               style={
                 spent > 0
@@ -186,13 +186,13 @@ export function CalendarPanel({
             >
               <span
                 className={`text-xs ${
-                  isToday ? "font-semibold text-brand-300" : "text-slate-400"
+                  isToday ? "font-semibold text-brand-300" : "text-ink-muted"
                 }`}
               >
                 {d.getDate()}
               </span>
               {spent > 0 && (
-                <span className="mt-auto truncate text-[11px] font-medium text-slate-200">
+                <span className="mt-auto truncate text-[11px] font-medium text-ink">
                   <Money amount={spent} currency={currencyCode} />
                 </span>
               )}
@@ -209,13 +209,13 @@ export function CalendarPanel({
         draggable
       >
         {selectedPurchases.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 px-4 py-6 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-paper-line bg-paper-base/40 px-4 py-6 text-center text-sm text-ink-muted">
             No purchases recorded on this day.
           </p>
         ) : (
           <>
             <div className="mb-3 flex items-baseline justify-between gap-3">
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-ink-muted">
                 {selectedPurchases.length} purchase
                 {selectedPurchases.length === 1 ? "" : "s"}
               </span>
@@ -223,12 +223,12 @@ export function CalendarPanel({
                 <Money amount={selectedTotal} currency={currencyCode} />
               </span>
             </div>
-            <ul className="divide-y divide-slate-800">
+            <ul className="divide-y divide-paper-line">
               {selectedPurchases.map((p) => (
                 <li key={p.id} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{p.description}</p>
-                    <p className="truncate text-xs text-slate-400">
+                    <p className="truncate text-xs text-ink-muted">
                       {new Date(p.occurredAt).toLocaleTimeString(undefined, {
                         hour: "numeric",
                         minute: "2-digit",

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CaptureResponse, ItemDTO, MilestoneDTO } from "@/lib/client";
 import { PERIOD_CURRENT } from "@/lib/period";
 import { usePlannerData } from "./usePlannerData";
+import { NotebookNav } from "./NotebookNav";
 import { StatusBar } from "./StatusBar";
 import { IncomePanel } from "./IncomePanel";
 import { BudgetPanel } from "./BudgetPanel";
@@ -41,7 +42,7 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-3 text-slate-400">
+      <div className="flex min-h-screen items-center justify-center gap-3 text-ink-muted">
         <Spinner /> Loading your budget…
       </div>
     );
@@ -56,20 +57,22 @@ export function Dashboard() {
     : "";
 
   return (
-    <div
+    <main id="main-content"
       className={`mx-auto px-4 py-8 sm:px-6 ${
         groupsOpen ? "max-w-[1700px]" : "max-w-6xl"
       }`}
     >
       <div className={groupsOpen ? "grid gap-6 lg:grid-cols-2 lg:items-start" : ""}>
         <div className="min-w-0">
-          <header className="mb-6">
+          <header className="mb-6 border-b border-paper-line pb-6">
+            <div className="mb-5 flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-ink-muted">
+              <span>Personal finance notebook</span><span>Plan · Track · Grow</span>
+            </div>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                  Budget Planner
-                </h1>
-                <p className="mt-1 max-w-2xl text-sm text-slate-400">
+                <h1 className="notebook-title"><span className="notebook-highlight">Budget Planner</span></h1>
+                <p className="notebook-note mb-2 mt-1 text-base">A little planning. More room for what matters.</p>
+                <p className="mt-1 max-w-2xl text-sm text-ink-muted">
                   Set up your monthly budget, record spending, and let a locally-run AI stage
                   your wishlist into affordable milestones. Open the group split beside your
                   budget to share costs without losing sight of your personal plan.
@@ -87,6 +90,8 @@ export function Dashboard() {
               <StatusBar status={status} />
             </div>
           </header>
+
+          <NotebookNav />
 
           {error && (
             <div className="mb-6">
@@ -202,14 +207,14 @@ export function Dashboard() {
             onPaid={handlePaid}
           />
 
-          <footer className="mt-10 border-t border-slate-700 pt-4 text-xs text-slate-400">
+          <footer className="mt-10 border-t border-paper-line pt-4 text-xs text-ink-muted">
             Local AI via Ollama · Product search via Channel3 (optional) · Payments via PayPal
             Sandbox
           </footer>
         </div>
 
         {groupsOpen && (
-          <aside className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-slate-950 p-3 sm:p-4 lg:sticky lg:inset-auto lg:top-6 lg:z-auto lg:min-w-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:bg-transparent lg:p-0">
+          <aside className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-paper-base p-3 sm:p-4 lg:sticky lg:inset-auto lg:top-6 lg:z-auto lg:min-w-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:bg-transparent lg:p-0">
             <GroupsPanel
               summary={summary}
               status={status}
@@ -219,7 +224,7 @@ export function Dashboard() {
           </aside>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -233,8 +238,8 @@ function Stat({
   tone?: "ok" | "danger";
 }) {
   return (
-    <div className="card py-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+    <div className="notebook-stat">
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{label}</p>
       <p className={`mt-1 text-lg font-semibold ${tone === "danger" ? "text-rose-400" : ""}`}>
         {value}
       </p>

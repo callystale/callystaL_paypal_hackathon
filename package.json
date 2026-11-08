@@ -8,14 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/group.test.ts src/lib/group-member.test.ts src/lib/paypal.test.ts src/lib/repayment-explanation.test.ts src/lib/checkout.test.ts",
+    "test": "node --import tsx --test src/lib/group.test.ts src/lib/group-member.test.ts src/lib/paypal.test.ts src/lib/repayment-explanation.test.ts src/lib/checkout.test.ts src/lib/seed.test.ts",
     "db:push": "prisma db push",
-    "db:seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
+    "db:seed": "node --import tsx --env-file-if-exists=.env prisma/seed.ts",
     "db:reset": "prisma db push --force-reset --skip-generate && npm run db:seed",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
+    "seed": "node --import tsx --env-file-if-exists=.env prisma/seed.ts"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.7.0",

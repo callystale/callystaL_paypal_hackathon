@@ -192,7 +192,7 @@ export function EditItemModal({
           </div>
 
           {item.alternativeName && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-200">
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700">
               <p>
                 Your plan currently uses the alternative{" "}
                 <span className="font-semibold">{item.alternativeName}</span> at{" "}
@@ -204,7 +204,7 @@ export function EditItemModal({
                 . Editing the target price will not change the planned amount unless you
                 remove the alternative.
               </p>
-              <label className="mt-2 flex items-center gap-2 text-amber-100">
+              <label className="mt-2 flex items-center gap-2 text-amber-700">
                 <input
                   type="checkbox"
                   checked={clearAlternative}
@@ -215,7 +215,7 @@ export function EditItemModal({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-800 pt-4">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-paper-line pt-4">
             <button
               type="button"
               className="btn-secondary"

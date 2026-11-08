@@ -90,8 +90,8 @@ export function PaymentLinkModal({
   return (
     <Modal open={Boolean(repayment)} onClose={close} title="Payment link & QR">
       <div className="space-y-4">
-        <div className="rounded-xl border border-slate-700">
-          <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="rounded-xl border border-paper-line">
+          <div className="flex items-center justify-between border-b border-paper-line px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
             <span>{group.name}</span>
             <span>{group.currency}</span>
           </div>
@@ -118,7 +118,7 @@ export function PaymentLinkModal({
 
         {link ? (
           <>
-            <div ref={qrContainer} className="flex flex-col items-center gap-3 rounded-xl border border-slate-800 bg-white p-4">
+            <div ref={qrContainer} className="flex flex-col items-center gap-3 rounded-xl border border-paper-line bg-white p-4">
               <QRCodeSVG
                 value={link}
                 size={184}
@@ -127,13 +127,13 @@ export function PaymentLinkModal({
                 includeMargin
                 aria-label={`Payment QR code for ${repayment.toName}`}
               />
-              <p className="text-center text-[11px] text-slate-600">
+              <p className="text-center text-[11px] text-ink-soft">
                 Scan with a phone camera to open the payment request
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-              <p className="mb-1 text-[11px] uppercase tracking-wide text-slate-500">
+            <div className="rounded-lg border border-paper-line bg-paper-base/50 p-3">
+              <p className="mb-1 text-[11px] uppercase tracking-wide text-ink-muted">
                 Payment link for {recipient?.displayName ?? repayment.toName}
               </p>
               <p className="break-all text-xs text-sky-300">{link}</p>
@@ -164,8 +164,8 @@ export function PaymentLinkModal({
         {sharedCheckout && /localhost|127\.0\.0\.1/.test(origin) && (
           <Alert>To scan from another device, open this app using a reachable network or deployed URL before sharing the QR. A localhost link only works on this computer.</Alert>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-800 px-3 py-2 text-xs">
-          <span className={pending ? "text-amber-300" : "text-slate-400"}>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-paper-line px-3 py-2 text-xs">
+          <span className={pending ? "text-amber-300" : "text-ink-muted"}>
             {pending
               ? `Requested · waiting for payment${
                   pending.paymentReference
@@ -212,7 +212,7 @@ export function PaymentLinkModal({
           </div>
         )}
 
-        <p className="text-[11px] leading-relaxed text-slate-500">
+        <p className="text-[11px] leading-relaxed text-ink-muted">
           {sharedCheckout
             ? `Send this QR code or link to ${repayment.fromName}. They review the recipient and sign in to their own PayPal account. Balances update after PayPal confirms payment.`
             : "The balance changes after you confirm payment or PayPal capture is confirmed."}

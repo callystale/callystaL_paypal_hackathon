@@ -90,7 +90,7 @@ export function WishlistPanel({
   };
 
   return (
-    <section className="card">
+    <section id="wishlist" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
@@ -98,7 +98,7 @@ export function WishlistPanel({
           </p>
           <h2 className="text-lg font-semibold">Desired items</h2>
           {summary && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-muted">
               <Money amount={summary.totals.remaining} currency={currencyCode} /> left in{" "}
               {periodLabel(new Date(summary.periodStart), new Date(summary.periodEnd))}
             </p>
@@ -162,7 +162,7 @@ export function WishlistPanel({
         </button>
       </div>
 
-      <ul className="divide-y divide-slate-800">
+      <ul className="divide-y divide-paper-line">
         {wishlist.length === 0 && (
           <li className="pt-2">
             <EmptyState>Nothing on the wishlist yet.</EmptyState>
@@ -183,9 +183,9 @@ export function WishlistPanel({
                     </span>
                   )}
                 </p>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-400">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
                   <select
-                    className="rounded-md border border-slate-700 bg-slate-950/60 px-1.5 py-0.5 text-xs text-slate-300 outline-none focus:border-brand-400"
+                    className="rounded-md border border-paper-line bg-paper-base/60 px-1.5 py-0.5 text-xs text-ink-soft outline-none focus:border-brand-400"
                     aria-label={`Category for ${item.name}`}
                     title="Change label"
                     value={item.category ?? ""}
@@ -232,7 +232,7 @@ export function WishlistPanel({
                   <Money amount={item.effectivePrice} currency={currencyCode} />
                 </span>
                 {item.alternativeName && (
-                  <span className="text-[11px] text-slate-500 line-through">
+                  <span className="text-[11px] text-ink-muted line-through">
                     <Money amount={item.targetPrice} currency={currencyCode} />
                   </span>
                 )}
@@ -249,7 +249,7 @@ export function WishlistPanel({
                 Edit
               </button>
               <button
-                className="btn btn-sm border border-brand-500/40 bg-brand-500/10 text-brand-200 hover:bg-brand-500/20"
+                className="btn btn-sm border border-brand-500/40 bg-brand-500/10 text-brand-700 hover:bg-brand-500/20"
                 onClick={() => setWhatIfFor(item)}
               >
                 What if I buy now?

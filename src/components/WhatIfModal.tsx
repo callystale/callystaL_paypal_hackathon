@@ -47,22 +47,22 @@ function AfterBudget({
   emptyLabel?: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-2.5">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+    <div className="rounded-lg border border-paper-line bg-paper-base/40 px-3 py-2.5">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
         {label}
       </p>
       {name && <p className="mt-0.5 text-sm font-medium">{name}</p>}
       {budget == null ? (
         <>
-          <p className="mt-0.5 text-sm text-slate-400">{emptyLabel}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-0.5 text-sm text-ink-muted">{emptyLabel}</p>
+          <p className="mt-0.5 text-[11px] text-ink-muted">
             <Money amount={spent} currency={currency} /> spent
           </p>
         </>
       ) : after == null ? (
         <>
-          <p className="mt-0.5 text-sm text-slate-400">No budget set</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-0.5 text-sm text-ink-muted">No budget set</p>
+          <p className="mt-0.5 text-[11px] text-ink-muted">
             <Money amount={spent} currency={currency} /> spent
           </p>
         </>
@@ -83,7 +83,7 @@ function AfterBudget({
               </>
             )}
           </p>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-0.5 text-[11px] text-ink-muted">
             <Money amount={spent} currency={currency} /> of{" "}
             <Money amount={budget} currency={currency} /> spent
           </p>
@@ -167,21 +167,21 @@ export function WhatIfModal({
     <Modal open={item != null} onClose={onClose} title="What if I buy this now?" wide>
       {item && (
         <>
-          <div className="mb-4 rounded-xl border border-slate-700 bg-slate-950/40 p-3">
+          <div className="mb-4 rounded-xl border border-paper-line bg-paper-base/40 p-3">
             <p className="text-sm font-medium">{item.name}</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-muted">
               Buying now costs{" "}
-              <Money amount={price} currency={currency} className="text-slate-300" />.
+              <Money amount={price} currency={currency} className="text-ink-soft" />.
             </p>
             {context && (
-              <p className="mt-0.5 text-[11px] text-slate-500">
+              <p className="mt-0.5 text-[11px] text-ink-muted">
                 Based on the current period: {context.period.label}
               </p>
             )}
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center gap-3 py-12 text-sm text-slate-400">
+            <div className="flex items-center justify-center gap-3 py-12 text-sm text-ink-muted">
               <Spinner />
               Checking your overall and category budgets…
             </div>
@@ -202,14 +202,14 @@ export function WhatIfModal({
               <div className={`mb-4 rounded-xl border px-3 py-3 ${style.card}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className={`badge ${style.badge}`}>{style.label}</span>
-                  <span className="text-[11px] uppercase tracking-wide text-slate-400">
+                  <span className="text-[11px] uppercase tracking-wide text-ink-muted">
                     {assessment.source === "ollama" ? "AI assessment" : "Local assessment"}
                   </span>
                 </div>
                 <p className={`mt-2 text-base font-semibold ${style.text}`}>
                   {assessment.headline}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                <p className="mt-1 text-sm leading-relaxed text-ink-soft">
                   {assessment.summary}
                 </p>
 
@@ -234,11 +234,11 @@ export function WhatIfModal({
                       currency={currency}
                     />
                   ) : (
-                    <div className="rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-2.5">
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+                    <div className="rounded-lg border border-paper-line bg-paper-base/40 px-3 py-2.5">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
                         Category budget
                       </p>
-                      <p className="mt-0.5 text-sm text-slate-400">
+                      <p className="mt-0.5 text-sm text-ink-muted">
                         {context.item.category
                           ? `No budget category matches "${context.item.category}"`
                           : "No category set"}
@@ -246,7 +246,7 @@ export function WhatIfModal({
                     </div>
                   )}
                 </div>
-                <p className="mt-2 text-[11px] text-slate-500">
+                <p className="mt-2 text-[11px] text-ink-muted">
                   {assessment.source === "ollama"
                     ? "AI narrative only; all figures are calculated locally."
                     : "All figures are calculated locally."}
@@ -255,7 +255,7 @@ export function WhatIfModal({
 
               <div className="mb-4">
                 <p className="label">What this changes</p>
-                <ul className="space-y-1.5 text-sm text-slate-300">
+                <ul className="space-y-1.5 text-sm text-ink-soft">
                   {assessment.factors.map((factor, index) => (
                     <li key={`${index}-${factor}`} className="flex gap-2">
                       <span className="text-brand-400" aria-hidden="true">
@@ -268,19 +268,19 @@ export function WhatIfModal({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <div className="rounded-xl border border-paper-line bg-paper-base/40 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                     Buy now
                   </p>
                   <dl className="mt-2 space-y-1 text-sm">
                     <div className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400">Pay today</dt>
+                      <dt className="text-ink-muted">Pay today</dt>
                       <dd>
                         <Money amount={price} currency={currency} />
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400">Overall left after</dt>
+                      <dt className="text-ink-muted">Overall left after</dt>
                       <dd
                         className={
                           overallAfter != null && overallAfter < 0
@@ -297,7 +297,7 @@ export function WhatIfModal({
                     </div>
                     {context.category?.remainingAfter != null && (
                       <div className="flex items-baseline justify-between gap-2">
-                        <dt className="text-slate-400">
+                        <dt className="text-ink-muted">
                           {context.category.name} left after
                         </dt>
                         <dd
@@ -315,18 +315,18 @@ export function WhatIfModal({
                       </div>
                     )}
                   </dl>
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-ink-muted">
                     {assessment.recommendation}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-700 bg-slate-950/40 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <div className="rounded-xl border border-paper-line bg-paper-base/40 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                     Save until target date
                   </p>
                   <dl className="mt-2 space-y-1 text-sm">
                     <div className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400">When</dt>
+                      <dt className="text-ink-muted">When</dt>
                       <dd>
                         {targetDate
                           ? targetDate.toLocaleDateString(undefined, {
@@ -338,7 +338,7 @@ export function WhatIfModal({
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-2">
-                      <dt className="text-slate-400">Overall left</dt>
+                      <dt className="text-ink-muted">Overall left</dt>
                       <dd>
                         {context.overall.remaining != null ? (
                           <Money
@@ -352,15 +352,15 @@ export function WhatIfModal({
                     </div>
                     {monthlySetAside != null ? (
                       <div className="flex items-baseline justify-between gap-2">
-                        <dt className="text-slate-400">Set aside</dt>
+                        <dt className="text-ink-muted">Set aside</dt>
                         <dd className="text-right">
                           <Money amount={monthlySetAside} currency={currency} />
-                          <span className="text-xs text-slate-500">/mo</span>
+                          <span className="text-xs text-ink-muted">/mo</span>
                         </dd>
                       </div>
                     ) : null}
                   </dl>
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-ink-muted">
                     {targetDate
                       ? daysUntil != null && daysUntil > 0
                         ? `${daysUntil} day${daysUntil === 1 ? "" : "s"} to save before the target date.`
@@ -375,25 +375,25 @@ export function WhatIfModal({
               <div className="mt-4">
                 <h3 className="label mb-2">Planned purchases at risk</h3>
                 {context.milestones.atRisk.length > 0 ? (
-                  <ul className="divide-y divide-slate-800 overflow-hidden rounded-xl border border-slate-800">
+                  <ul className="divide-y divide-paper-line overflow-hidden rounded-xl border border-paper-line">
                     {context.milestones.atRisk.map((milestone) => (
                       <li key={milestone.id} className="px-3 py-2 text-sm">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="font-medium">{milestone.title}</span>
                           <Money amount={milestone.total} currency={currency} />
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-slate-400">
+                        <p className="mt-0.5 truncate text-xs text-ink-muted">
                           {milestone.items.join(" · ")}
                         </p>
                       </li>
                     ))}
                   </ul>
                 ) : context.milestones.hasPlan ? (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-ink-muted">
                     No planned purchases would be affected.
                   </p>
                 ) : (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-ink-muted">
                     No staged plan yet. Generate one in Step 5 and it will account for the
                     remaining budget.
                   </p>
@@ -408,7 +408,7 @@ export function WhatIfModal({
             </>
           ) : null}
 
-          <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-slate-800 pt-4">
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-paper-line pt-4">
             <button className="btn-secondary" onClick={onClose}>
               Keep as preview
             </button>
@@ -417,7 +417,7 @@ export function WhatIfModal({
               {item.milestoneId ? "Update plan" : "Add to plan"}
             </button>
           </div>
-          <p className="mt-2 text-right text-[11px] text-slate-500">
+          <p className="mt-2 text-right text-[11px] text-ink-muted">
             Nothing changes until you confirm. This refreshes your staged plan in Step 5.
           </p>
         </>

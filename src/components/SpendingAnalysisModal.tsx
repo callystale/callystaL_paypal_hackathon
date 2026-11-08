@@ -18,10 +18,10 @@ function Stat({
       ? "text-rose-400"
       : tone === "positive"
         ? "text-emerald-400"
-        : "text-slate-100";
+        : "text-ink";
   return (
-    <div className="rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-2.5">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
+    <div className="rounded-lg border border-paper-line bg-paper-inset/50 px-3 py-2.5">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">{label}</p>
       <p className={`mt-0.5 text-base font-semibold ${toneClass}`}>{children}</p>
     </div>
   );
@@ -50,14 +50,14 @@ export function SpendingAnalysisModal({
   return (
     <Modal open={open} onClose={onClose} title="Spending analysis" wide>
       {loading ? (
-        <div className="flex items-center justify-center gap-3 py-12 text-sm text-slate-400">
+        <div className="flex items-center justify-center gap-3 py-12 text-sm text-ink-muted">
           <Spinner />
           Analyzing all purchases from this month…
         </div>
       ) : error ? (
         <div className="space-y-4">
           <Alert>{error}</Alert>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-ink-muted">
             The analysis could not be generated. Your purchases and budgets were not changed.
           </p>
         </div>
@@ -73,13 +73,13 @@ export function SpendingAnalysisModal({
             >
               {analysis.source === "ollama" ? "AI coach" : "Local analysis"}
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-ink-muted">
               {analysis.periodLabel} · {analysis.purchaseCount}{" "}
               {analysis.purchaseCount === 1 ? "purchase" : "purchases"}
             </span>
           </div>
 
-          <p className="text-sm leading-relaxed text-slate-200">{analysis.summary}</p>
+          <p className="text-sm leading-relaxed text-ink">{analysis.summary}</p>
 
           <div className="grid gap-2 sm:grid-cols-3">
             <Stat label="Spent">
@@ -89,7 +89,7 @@ export function SpendingAnalysisModal({
               {hasBudget ? (
                 <Money amount={analysis.totals.budget} currency={analysis.currency} />
               ) : (
-                <span className="text-slate-400">Not set</span>
+                <span className="text-ink-muted">Not set</span>
               )}
             </Stat>
             <Stat
@@ -105,13 +105,13 @@ export function SpendingAnalysisModal({
               {hasBudget ? (
                 <Money amount={analysis.totals.remaining} currency={analysis.currency} />
               ) : (
-                <span className="text-slate-400">—</span>
+                <span className="text-ink-muted">—</span>
               )}
             </Stat>
           </div>
 
           {analysis.totals.previousSpent > 0 && (
-            <p className="-mt-2 text-xs text-slate-400">
+            <p className="-mt-2 text-xs text-ink-muted">
               Previous month:{" "}
               <Money amount={analysis.totals.previousSpent} currency={analysis.currency} /> spent.
             </p>
@@ -131,14 +131,14 @@ export function SpendingAnalysisModal({
                         />
                         <span className="truncate">{category.name}</span>
                       </span>
-                      <span className="shrink-0 text-slate-300">
+                      <span className="shrink-0 text-ink-soft">
                         <Money amount={category.spent} currency={analysis.currency} />
-                        <span className="ml-2 text-xs text-slate-500">
+                        <span className="ml-2 text-xs text-ink-muted">
                           {Math.round(category.share * 100)}%
                         </span>
                       </span>
                     </div>
-                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-paper-inset">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -155,7 +155,7 @@ export function SpendingAnalysisModal({
 
           <div>
             <p className="label">Insights</p>
-            <ul className="space-y-2 text-sm text-slate-300">
+            <ul className="space-y-2 text-sm text-ink-soft">
               {analysis.insights.map((insight, index) => (
                 <li key={`${index}-${insight}`} className="flex gap-2">
                   <span className="text-brand-400" aria-hidden="true">
@@ -172,11 +172,11 @@ export function SpendingAnalysisModal({
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-300">
                 Coach&apos;s take
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-200">{analysis.coach}</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink">{analysis.coach}</p>
             </div>
           )}
 
-          <p className="border-t border-slate-800 pt-3 text-xs text-slate-500">
+          <p className="border-t border-paper-line pt-3 text-xs text-ink-muted">
             {analysis.source === "ollama"
               ? "Numbers computed locally from this month's purchases. Coaching note from the local model."
               : "Computed locally from this month's purchases."}

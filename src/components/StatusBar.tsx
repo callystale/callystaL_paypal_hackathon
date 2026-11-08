@@ -5,7 +5,7 @@ import type { StatusDTO } from "@/lib/client";
 function Dot({ ok }: { ok: boolean }) {
   return (
     <span
-      className={`inline-block h-2 w-2 rounded-full ${ok ? "bg-emerald-500" : "bg-slate-600"}`}
+      className={`inline-block h-2 w-2 rounded-full ${ok ? "bg-emerald-500" : "bg-ink-muted"}`}
     />
   );
 }
@@ -20,10 +20,10 @@ function Pill({
   detail: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300">
+    <div className="flex items-center gap-2 rounded-full border border-paper-line bg-paper-page px-3 py-1.5 text-xs text-ink-soft">
       <Dot ok={ok} />
-      <span className="font-medium text-slate-100">{label}</span>
-      <span className="text-slate-400">{detail}</span>
+      <span className="font-medium text-ink">{label}</span>
+      <span className="text-ink-muted">{detail}</span>
     </div>
   );
 }

@@ -69,7 +69,7 @@ export function PlanPanel({
   };
 
   return (
-    <section className="card">
+    <section id="milestones" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
@@ -77,7 +77,7 @@ export function PlanPanel({
           </p>
           <h2 className="text-lg font-semibold">AI milestones</h2>
           {plan && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-muted">
               Affordable budget per milestone:{" "}
               <Money amount={plan.monthlyBudget} currency={currencyCode} />
               {plan.source ? (
@@ -130,8 +130,8 @@ export function PlanPanel({
         </EmptyState>
       ) : (
         <div>
-          <p className="mb-3 text-sm text-slate-400">Choose one item, combine items across milestones, or pay for all unpaid items together.</p>
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 p-3">
+          <p className="mb-3 text-sm text-ink-muted">Choose one item, combine items across milestones, or pay for all unpaid items together.</p>
+          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-paper-line p-3">
             <button className="btn-secondary" onClick={() => setSelectedIds(unpaid.map((item) => item.id))} disabled={!unpaid.length}>Select all</button>
             <button className="btn-ghost" onClick={() => setSelectedIds([])} disabled={!selected.length}>Clear selection</button>
             <span className="text-sm" aria-live="polite">{selected.length} selected · <Money amount={round2(selected.reduce((sum, item) => sum + item.effectivePrice, 0))} currency={currencyCode} /></span>
@@ -142,7 +142,7 @@ export function PlanPanel({
           {milestones.map((m) => (
             <article
               key={m.id}
-              className="flex flex-col rounded-xl border border-slate-700 bg-slate-800/50 p-4"
+              className="flex flex-col rounded-xl border border-paper-line bg-paper-inset/50 p-4"
             >
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">
@@ -155,10 +155,10 @@ export function PlanPanel({
                   <Money amount={m.total} currency={currencyCode} />
                 </span>
               </div>
-              {m.rationale && <p className="mb-3 text-xs text-slate-400">{m.rationale}</p>}
+              {m.rationale && <p className="mb-3 text-xs text-ink-muted">{m.rationale}</p>}
               <ul className="mb-3 flex-1 space-y-1.5">
                 {m.items.map((item) => (
-                  <li key={item.id} className="rounded-lg border border-slate-700 p-3 text-sm">
+                  <li key={item.id} className="rounded-lg border border-paper-line p-3 text-sm">
                     <label className="flex cursor-pointer items-start gap-2">
                       <input type="checkbox" className="mt-1 accent-indigo-500" checked={!item.purchased && selectedIds.includes(item.id)} disabled={item.purchased} onChange={() => toggle(item.id)} />
                       <span className="min-w-0 flex-1">

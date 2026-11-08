@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { formatCurrency } from "@/lib/money";
 
 export function Money({
@@ -29,7 +29,7 @@ export function PriorityBadge({ priority }: { priority: string }) {
   const styles: Record<string, string> = {
     HIGH: "bg-rose-500/20 text-rose-300",
     MEDIUM: "bg-amber-500/20 text-amber-300",
-    LOW: "bg-slate-800 text-slate-300",
+    LOW: "bg-paper-inset text-ink-soft",
   };
   return (
     <span className={`badge ${styles[priority] ?? styles.LOW}`}>{priority.toLowerCase()}</span>
@@ -39,7 +39,7 @@ export function PriorityBadge({ priority }: { priority: string }) {
 export function Progress({
   value,
   max,
-  color = "#6366f1",
+  color = "#829877",
 }: {
   value: number;
   max: number;
@@ -48,10 +48,10 @@ export function Progress({
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   const over = max > 0 && value > max;
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+    <div className="h-2 w-full overflow-hidden rounded-full bg-paper-inset">
       <div
         className="h-full rounded-full transition-all"
-        style={{ width: `${pct}%`, backgroundColor: over ? "#e11d48" : color }}
+        style={{ width: `${pct}%`, backgroundColor: over ? "#ae5b65" : color }}
       />
     </div>
   );
@@ -76,6 +76,8 @@ export function Modal({
   /** Allow dragging the dialog by its header. */
   draggable?: boolean;
 }) {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{
     pointerId: number;
@@ -97,6 +99,26 @@ export function Modal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    dialog?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !dialog) return;
+      const dialogs = document.querySelectorAll('[aria-modal="true"]');
+      if (dialogs[dialogs.length - 1] !== dialog) return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), iframe, [tabindex="0"]')).filter((element) => element.getClientRects().length > 0);
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (!first) { event.preventDefault(); dialog.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", trapFocus);
+    return () => { document.removeEventListener("keydown", trapFocus); if (previousFocus?.isConnected) previousFocus.focus(); };
+  }, [open]);
 
   const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!draggable) return;
@@ -133,14 +155,19 @@ export function Modal({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center ${
-        dim ? "bg-black/70" : "bg-transparent"
+        dim ? "bg-[#302b23]/35 backdrop-blur-[2px]" : "bg-transparent"
       }`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className={`my-8 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl shadow-black/50`}
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={`notebook-dialog my-8 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl border border-paper-line bg-paper-page p-5 sm:p-7`}
         style={draggable ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
       >
         <div
@@ -154,11 +181,11 @@ export function Modal({
         >
           <div className="flex min-w-0 items-center gap-2">
             {draggable && (
-              <span className="shrink-0 text-sm text-slate-500" aria-hidden="true">
+              <span className="shrink-0 text-sm text-ink-muted" aria-hidden="true">
                 ⠿
               </span>
             )}
-            <h2 className="truncate text-lg font-semibold">{title}</h2>
+            <h2 id={titleId} className="dialog-title text-2xl">{title}</h2>
           </div>
           <button onClick={onClose} className="btn-ghost" aria-label="Close">
             ✕
@@ -172,7 +199,7 @@ export function Modal({
 
 export function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-700 bg-slate-900 p-4 text-center text-sm text-slate-400">
+    <p className="notebook-empty rounded-xl border border-dashed border-paper-line bg-paper-page p-4 text-center text-sm text-ink-muted">
       {children}
     </p>
   );

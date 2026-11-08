@@ -12,7 +12,7 @@ import { round2 } from "@/lib/money";
 import { PeriodFilter } from "./PeriodFilter";
 import { Alert, Money } from "./ui";
 
-const COLORS = ["#6366f1", "#22c55e", "#f97316", "#06b6d4", "#ec4899", "#8b5cf6", "#eab308"];
+const COLORS = ["#829877", "#9fafa1", "#c69c80", "#8daab1", "#bf919e", "#a59aba", "#c3b270"];
 const STARTER = ["Savings", "Everyday spending", "Investing"];
 
 interface DraftCategory {
@@ -300,19 +300,19 @@ export function IncomePanel({
   const denom = Math.max(allocated, salaryNum, 1);
 
   return (
-    <section className="card">
+    <section id="income" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
             Step 1 · Monthly budget
           </p>
           <h2 className="text-lg font-semibold">Set up a personalized monthly budget</h2>
-          <p className="mt-1 max-w-2xl text-sm text-slate-400">
+          <p className="mt-1 max-w-2xl text-sm text-ink-muted">
             Tell the AI your income and what matters to you. It asks a few questions, then suggests
             how to split the money across your categories — edit anything before saving.
           </p>
           {summary && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-ink-muted">
               <Money amount={summary.totals.spent} currency={currencyCode} /> spent of{" "}
               <Money amount={summary.totals.budget} currency={currencyCode} /> budgeted this period.
             </p>
@@ -368,7 +368,7 @@ export function IncomePanel({
               ↩ Revert last AI change
             </button>
           )}
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-ink-muted">
             The AI uses your income, goals and categories to plan your budget.
           </span>
         </div>
@@ -377,7 +377,7 @@ export function IncomePanel({
           <div className="mt-4 flex flex-col gap-3">
             {questions.map((q) => (
               <div key={q.id}>
-                <label className="label normal-case tracking-normal text-slate-300">
+                <label className="label normal-case tracking-normal text-ink-soft">
                   {q.question}
                 </label>
                 <input
@@ -392,9 +392,9 @@ export function IncomePanel({
         )}
 
         {suggestion && (
-          <div className="mt-4 rounded-lg border border-slate-700 bg-slate-900 p-3">
-            <p className="text-sm text-slate-200">{suggestion.explanation}</p>
-            <p className="mt-1 text-xs text-slate-400">
+          <div className="mt-4 rounded-lg border border-paper-line bg-paper-page p-3">
+            <p className="text-sm text-ink">{suggestion.explanation}</p>
+            <p className="mt-1 text-xs text-ink-muted">
               {suggestion.source === "ollama" ? "Suggested by your local AI" : "Suggested heuristically"} ·
               edit any amount in the categories below.
             </p>
@@ -449,7 +449,7 @@ export function IncomePanel({
                   value={row.amount}
                   onChange={(e) => changeAmount(row.key, e.target.value)}
                 />
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-ink-muted">
                   {currencyCode === "USD" ? "$" : currencyCode}
                 </span>
               </div>
@@ -466,7 +466,7 @@ export function IncomePanel({
                   value={row.percent ?? ""}
                   onChange={(e) => changePercent(row.key, e.target.value)}
                 />
-                <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-slate-400">
+                <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-ink-muted">
                   %
                 </span>
               </div>
@@ -483,7 +483,7 @@ export function IncomePanel({
         </div>
 
         {draft.length > 0 && allocated > 0 && (
-          <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+          <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-paper-inset">
             {draft.map((d) => (
               <span
                 key={d.key}
@@ -497,8 +497,8 @@ export function IncomePanel({
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
-        <p className="text-sm text-slate-400">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-paper-line pt-4">
+        <p className="text-sm text-ink-muted">
           {salaryNum > 0 ? (
             <>
               Allocated <Money amount={allocated} currency={currencyCode} />
@@ -509,7 +509,7 @@ export function IncomePanel({
               {Math.abs(unallocated) < 0.01 ? (
                 <span className="text-emerald-400"> · fully allocated</span>
               ) : unallocated > 0 ? (
-                <span className="text-slate-400"> · <Money amount={unallocated} currency={currencyCode} /> unallocated</span>
+                <span className="text-ink-muted"> · <Money amount={unallocated} currency={currencyCode} /> unallocated</span>
               ) : (
                 <span className="text-rose-400"> · <Money amount={Math.abs(unallocated)} currency={currencyCode} /> over income</span>
               )}

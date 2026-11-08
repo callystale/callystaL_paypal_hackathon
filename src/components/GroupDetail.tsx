@@ -296,9 +296,9 @@ export function GroupDetail({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-xl font-semibold">{group.name}</h3>
-            <span className="badge bg-slate-800 text-slate-300">{group.currency}</span>
+            <span className="badge bg-paper-inset text-ink-soft">{group.currency}</span>
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-ink-muted">
             {group.members.length} member{group.members.length === 1 ? "" : "s"} ·{" "}
             {group.expenses.length} expense{group.expenses.length === 1 ? "" : "s"} ·{" "}
             <Cents cents={group.totals.spentCents} currency={group.currency} /> shared
@@ -312,7 +312,7 @@ export function GroupDetail({
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
                   : yourNet < 0
                     ? "border-rose-500/30 bg-rose-500/10 text-rose-300"
-                    : "border-slate-700 bg-slate-800/50 text-slate-300"
+                    : "border-paper-line bg-paper-inset/50 text-ink-soft"
               }`}
             >
               {yourNet > 0 ? "You are owed " : yourNet < 0 ? "You owe " : "You are settled"}
@@ -344,9 +344,9 @@ export function GroupDetail({
       </header>
 
       <div className="grid gap-4 2xl:grid-cols-2 2xl:items-start">
-        <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+        <section className="rounded-xl border border-paper-line bg-paper-base/40 p-4">
           <div className="mb-2 flex items-center justify-between gap-2">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
               Members
             </h4>
             {!selfMember && (
@@ -354,7 +354,7 @@ export function GroupDetail({
             )}
           </div>
 
-          <ul className="divide-y divide-slate-800">
+          <ul className="divide-y divide-paper-line">
             {group.members.map((member) => {
               const balance = group.balances.find(
                 (row) => row.memberId === member.id,
@@ -369,7 +369,7 @@ export function GroupDetail({
                         <span className="badge bg-brand-500/20 text-brand-300">you</span>
                       )}
                     </p>
-                    <p className="truncate text-xs text-slate-400">
+                    <p className="truncate text-xs text-ink-muted">
                       Paid <Cents cents={balance?.paidCents ?? 0} currency={group.currency} /> ·{" "}
                       {member.isSelf ? "your" : "their"} share{" "}
                       <Cents cents={balance?.shareCents ?? 0} currency={group.currency} />
@@ -386,7 +386,7 @@ export function GroupDetail({
                         ? "text-emerald-300"
                         : net < 0
                           ? "text-rose-300"
-                          : "text-slate-400"
+                          : "text-ink-muted"
                     }`}
                   >
                     {net > 0 ? "is owed " : net < 0 ? "owes " : "settled"}
@@ -432,10 +432,10 @@ export function GroupDetail({
             })}
           </ul>
 
-          <p className="mt-2 rounded-lg bg-slate-900/80 px-2 py-1.5 text-[11px] leading-relaxed text-slate-500">
-            <span className="text-slate-300">Paid</span> = what this member fronted for the
-            group. <span className="text-slate-300">Share</span> = their part of all expenses.{" "}
-            <span className="text-slate-300">Net</span> = paid − share + settlements + direction changes.
+          <p className="mt-2 rounded-lg bg-paper-page/80 px-2 py-1.5 text-[11px] leading-relaxed text-ink-muted">
+            <span className="text-ink-soft">Paid</span> = what this member fronted for the
+            group. <span className="text-ink-soft">Share</span> = their part of all expenses.{" "}
+            <span className="text-ink-soft">Net</span> = paid − share + settlements + direction changes.
           </p>
 
           <div className="mt-3 space-y-2">
@@ -480,15 +480,15 @@ export function GroupDetail({
               </button>
             </div>
           </div>
-          <p className="mt-1.5 text-[11px] text-slate-500">
+          <p className="mt-1.5 text-[11px] text-ink-muted">
             Add a friend using their PayPal email and an optional nickname. Leave the nickname
             blank to display their email. You can edit it later with the pencil. Adding an email does not verify
             their PayPal account or retrieve their profile name.
           </p>
         </section>
 
-        <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-300">
+        <section className="rounded-xl border border-paper-line bg-paper-base/40 p-4">
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">
             Add expense
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -516,7 +516,7 @@ export function GroupDetail({
               value={expenseDate}
               onChange={(e) => setExpenseDate(e.target.value)}
             />
-            <label className="col-span-2 text-xs text-slate-400">
+            <label className="col-span-2 text-xs text-ink-muted">
               Paid by
               <select
                 className="input mt-1"
@@ -531,7 +531,7 @@ export function GroupDetail({
                 ))}
               </select>
             </label>
-            <label className="col-span-2 text-xs text-slate-400">
+            <label className="col-span-2 text-xs text-ink-muted">
               Category (optional)
               <input
                 className="input mt-1"
@@ -546,11 +546,11 @@ export function GroupDetail({
 
           <div className="mt-3">
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="text-xs text-slate-400">Split equally between</span>
+              <span className="text-xs text-ink-muted">Split equally between</span>
               <span className="flex gap-2 text-[11px]">
                 <button
                   type="button"
-                  className="underline text-slate-400 hover:text-slate-200"
+                  className="underline text-ink-muted hover:text-ink"
                   onClick={() =>
                     setParticipantIds(group.members.map((member) => member.id))
                   }
@@ -559,7 +559,7 @@ export function GroupDetail({
                 </button>
                 <button
                   type="button"
-                  className="underline text-slate-400 hover:text-slate-200"
+                  className="underline text-ink-muted hover:text-ink"
                   onClick={() => setParticipantIds([])}
                 >
                   Clear
@@ -570,7 +570,7 @@ export function GroupDetail({
               {group.members.map((member) => (
                 <label
                   key={member.id}
-                  className="flex items-center gap-2 rounded-md border border-slate-800 px-2 py-1.5 text-sm"
+                  className="flex items-center gap-2 rounded-md border border-paper-line px-2 py-1.5 text-sm"
                 >
                   <input
                     type="checkbox"
@@ -594,9 +594,9 @@ export function GroupDetail({
           </div>
 
           {preview && (
-            <div className="mt-3 rounded-lg border border-slate-800 bg-slate-900/70 p-2.5 text-xs">
-              <p className="font-medium text-slate-300">Equal split preview</p>
-              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-slate-400">
+            <div className="mt-3 rounded-lg border border-paper-line bg-paper-page/70 p-2.5 text-xs">
+              <p className="font-medium text-ink-soft">Equal split preview</p>
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-ink-muted">
                 {preview.map((share) => (
                   <span key={share.memberId}>
                     {nameById.get(share.memberId) ?? "Member"}:{" "}
@@ -604,13 +604,13 @@ export function GroupDetail({
                   </span>
                 ))}
               </div>
-              <p className="mt-1 text-[11px] text-slate-500">
+              <p className="mt-1 text-[11px] text-ink-muted">
                 Leftover cents are assigned one at a time, so the shares add up exactly.
               </p>
             </div>
           )}
 
-          <div className="mt-3 rounded-lg border border-slate-800 p-2.5">
+          <div className="mt-3 rounded-lg border border-paper-line p-2.5">
             <label className="flex items-start gap-2 text-sm">
               <input
                 type="checkbox"
@@ -621,7 +621,7 @@ export function GroupDetail({
               />
               <span>
                 Add my share to my personal budget
-                <span className="block text-[11px] text-slate-500">
+                <span className="block text-[11px] text-ink-muted">
                   Only your share is copied, not the whole group expense.
                 </span>
               </span>
@@ -663,23 +663,23 @@ export function GroupDetail({
 
       <section>
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-1">
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
             Expense history
           </h4>
-          <span className="text-[10px] uppercase tracking-wide text-slate-500">
+          <span className="text-[10px] uppercase tracking-wide text-ink-muted">
             {editLocked
               ? "editing locked after payment or during processing"
               : "totals and custom shares are editable before payment"}
           </span>
         </div>
         {editLocked && (
-          <p className="mb-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-200">
+          <p className="mb-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-700">
             A payment has been completed or is being processed in this group. Expense
             amounts and shares are locked to protect those payments.
           </p>
         )}
         {!editLocked && group.settlements.some((settlement) => settlement.status === "PENDING") && (
-          <p className="mb-2 text-xs text-slate-400">
+          <p className="mb-2 text-xs text-ink-muted">
             Nothing has been paid yet. You can edit expenses; saving changes clears pending
             payment requests so you can create new ones for the updated balances.
           </p>
@@ -701,7 +701,7 @@ export function GroupDetail({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium">Editing expense</p>
-                      <span className="badge bg-brand-500/15 text-brand-200">
+                      <span className="badge bg-brand-500/15 text-brand-700">
                         custom split
                       </span>
                     </div>
@@ -744,7 +744,7 @@ export function GroupDetail({
                           }))
                         }
                       />
-                      <label className="col-span-2 text-xs text-slate-400">
+                      <label className="col-span-2 text-xs text-ink-muted">
                         Paid by
                         <select
                           className="input mt-1"
@@ -764,7 +764,7 @@ export function GroupDetail({
                           ))}
                         </select>
                       </label>
-                      <label className="col-span-2 text-xs text-slate-400">
+                      <label className="col-span-2 text-xs text-ink-muted">
                         Category (optional)
                         <input
                           className="input mt-1"
@@ -784,12 +784,12 @@ export function GroupDetail({
 
                     <div className="mt-3">
                       <div className="mb-1.5 flex items-center justify-between gap-2">
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-ink-muted">
                           Each person&apos;s share
                         </span>
                         <button
                           type="button"
-                          className="text-[11px] underline text-slate-400 hover:text-slate-200"
+                          className="text-[11px] underline text-ink-muted hover:text-ink"
                           onClick={splitEditEqually}
                         >
                           Split equally between everyone
@@ -799,7 +799,7 @@ export function GroupDetail({
                         {group.members.map((member) => (
                           <label
                             key={member.id}
-                            className="flex items-center gap-2 rounded-md border border-slate-800 px-2 py-1.5"
+                            className="flex items-center gap-2 rounded-md border border-paper-line px-2 py-1.5"
                           >
                             <span className="min-w-0 flex-1 truncate text-sm">
                               {member.displayName}
@@ -831,7 +831,7 @@ export function GroupDetail({
                       className={`mt-2 rounded-lg border px-2.5 py-2 text-[11px] ${
                         editRemaining === 0
                           ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                          : "border-amber-500/30 bg-amber-500/10 text-amber-200"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-700"
                       }`}
                     >
                       Allocated <Cents cents={editShareTotal} currency={group.currency} /> of{" "}
@@ -873,7 +873,7 @@ export function GroupDetail({
               return (
                 <li
                   key={expense.id}
-                  className="rounded-xl border border-slate-800 bg-slate-950/40 p-3"
+                  className="rounded-xl border border-paper-line bg-paper-base/40 p-3"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -885,7 +885,7 @@ export function GroupDetail({
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-ink-muted">
                         {new Date(expense.occurredAt).toLocaleDateString()} · paid by{" "}
                         {expense.payerName} · {expense.shares.length} participant
                         {expense.shares.length === 1 ? "" : "s"}
@@ -936,8 +936,8 @@ export function GroupDetail({
                         key={share.id}
                         className={`badge border ${
                           share.isSelf
-                            ? "border-brand-500/40 bg-brand-500/15 text-brand-200"
-                            : "border-slate-700 bg-slate-800/60 text-slate-300"
+                            ? "border-brand-500/40 bg-brand-500/15 text-brand-700"
+                            : "border-paper-line bg-paper-inset/60 text-ink-soft"
                         }`}
                       >
                         {share.memberName}:{" "}
@@ -947,7 +947,7 @@ export function GroupDetail({
                   </div>
 
                   {selfShare && (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-slate-800 pt-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-paper-line pt-2">
                       {selfShare.purchaseId ? (
                         <>
                           <span className="text-xs text-emerald-300">
@@ -970,7 +970,7 @@ export function GroupDetail({
                           </button>
                         </>
                       ) : selfShare.amountCents === 0 ? (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-ink-muted">
                           Your share is zero, so there is nothing to add.
                         </span>
                       ) : (
@@ -1021,10 +1021,10 @@ export function GroupDetail({
       <div className="grid gap-5 2xl:grid-cols-2 2xl:items-start">
         <section>
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-1">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
               Suggested repayments
             </h4>
-            <span className="text-[10px] uppercase tracking-wide text-slate-500">
+            <span className="text-[10px] uppercase tracking-wide text-ink-muted">
               arrow → points to who is owed
             </span>
           </div>
@@ -1056,7 +1056,7 @@ export function GroupDetail({
                 return (
                   <li
                     key={key}
-                    className="rounded-xl border border-slate-800 bg-slate-950/40 p-3"
+                    className="rounded-xl border border-paper-line bg-paper-base/40 p-3"
                   >
                     <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
                       <div className="min-w-0 text-right">
@@ -1099,12 +1099,12 @@ export function GroupDetail({
                         className={`badge ${
                           pending
                             ? "bg-amber-500/15 text-amber-300"
-                            : "bg-slate-800 text-slate-300"
+                            : "bg-paper-inset text-ink-soft"
                         }`}
                       >
                         {pending ? "requested" : "unpaid"}
                       </span>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[11px] text-ink-muted">
                         {pending
                           ? "Payment request sent · waiting for confirmation"
                           : "No payment request yet"}
@@ -1167,7 +1167,7 @@ export function GroupDetail({
             </ul>
           )}
           {group.directionChanges.length > 0 && (
-            <details className="mt-3 rounded-lg border border-slate-800 px-3 py-2 text-xs text-slate-400">
+            <details className="mt-3 rounded-lg border border-paper-line px-3 py-2 text-xs text-ink-muted">
               <summary className="cursor-pointer">Saved direction changes ({group.directionChanges.length})</summary>
               <ul className="mt-2 space-y-1">
                 {group.directionChanges.map((change) => (
@@ -1179,7 +1179,7 @@ export function GroupDetail({
               </ul>
             </details>
           )}
-          <p className="mt-2 text-[11px] text-slate-500">
+          <p className="mt-2 text-[11px] text-ink-muted">
             Reverse direction corrects who owes whom and saves the change without recording a payment.
             Mark settled records a manual repayment. A payment link or QR code records a
             pending request; the balance changes only after you confirm the payment.
@@ -1189,7 +1189,7 @@ export function GroupDetail({
         </section>
 
         <section>
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-300">
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-soft">
             Settlement history
           </h4>
           {group.settlements.length === 0 ? (
@@ -1201,15 +1201,15 @@ export function GroupDetail({
                 return (
                   <li
                     key={settlement.id}
-                    className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-3"
+                    className="flex flex-wrap items-center gap-2 rounded-xl border border-paper-line bg-paper-base/40 p-3"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm">
                         {settlement.senderName}
-                        <span className="mx-1.5 text-slate-500">→</span>
+                        <span className="mx-1.5 text-ink-muted">→</span>
                         {settlement.recipientName}
                       </p>
-                      <p className="truncate text-xs text-slate-400">
+                      <p className="truncate text-xs text-ink-muted">
                         {new Date(settlement.settledAt ?? settlement.createdAt).toLocaleDateString()}
                         {settlementReferenceLabel(settlement.paymentReference)
                           ? ` · ${settlementReferenceLabel(settlement.paymentReference)}`
@@ -1217,7 +1217,7 @@ export function GroupDetail({
                             ? ` · PayPal ${settlement.paypalOrderId}`
                             : ""}
                       </p>
-                      {settlement.note && <p className="mt-1 text-xs text-slate-500">{settlement.note}</p>}
+                      {settlement.note && <p className="mt-1 text-xs text-ink-muted">{settlement.note}</p>}
                     </div>
                     <span className="text-sm font-medium">
                       <Cents cents={settlement.amountCents} currency={group.currency} />
@@ -1263,7 +1263,7 @@ export function GroupDetail({
         title={`Edit ${editingMember?.displayName ?? "member"}`}
       >
         <div className="space-y-3">
-          <label className="block text-xs text-slate-400">
+          <label className="block text-xs text-ink-muted">
             Nickname (optional)
             <input
               className="input mt-1"
@@ -1278,7 +1278,7 @@ export function GroupDetail({
               }
             />
           </label>
-          <label className="block text-xs text-slate-400">
+          <label className="block text-xs text-ink-muted">
             PayPal email or PayPal.Me handle
             <input
               className="input mt-1"
@@ -1299,7 +1299,7 @@ export function GroupDetail({
               }}
             />
           </label>
-          <p className="text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[11px] leading-relaxed text-ink-muted">
             Leave the nickname blank to display the PayPal address. Changing a nickname
             keeps the payment address unchanged. The address is used for payment links
             and QR codes; leave it blank to remove it.

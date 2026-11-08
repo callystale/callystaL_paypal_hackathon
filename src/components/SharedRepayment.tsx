@@ -21,14 +21,14 @@ export function SharedRepayment({ group, settlement, paypal }: {
   const status: StatusDTO = { paypal, ollama: { configured: false, model: "", baseUrl: "" }, channel3: { configured: false } };
   return <main className="mx-auto max-w-lg px-5 py-12">
     <section className="card space-y-5 p-6">
-      <p className="text-sm text-slate-400">{group.name} · Payment request</p>
+      <p className="text-sm text-ink-muted">{group.name} · Payment request</p>
       <h1 className="text-2xl font-semibold">{settlement.senderName} pays {settlement.recipientName}</h1>
       {paid && !settled && <Alert kind="info">Payment confirmed. Any remaining debt is shown below.</Alert>}
       {settled ? <Alert kind="info">This payment is already completed. No further payment is needed for this request.</Alert>
         : !repayment ? <Alert>This request is no longer payable. Ask for an updated payment request.</Alert>
         : <>
           <p className="text-3xl font-semibold"><Money amount={fromCents(repayment.amountCents)} currency={group.currency} /></p>
-          <p className="text-sm text-slate-400">Sign in to the PayPal account saved for {settlement.senderName}. Review the recipient before approving payment.</p>
+          <p className="text-sm text-ink-muted">Sign in to the PayPal account saved for {settlement.senderName}. Review the recipient before approving payment.</p>
           <button className="btn-primary" onClick={() => setCheckout(true)}>Pay {settlement.recipientName}</button>
         </>}
     </section>

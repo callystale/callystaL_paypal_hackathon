@@ -13,7 +13,7 @@ function ProductPhoto({ src, title }: { src?: string; title: string }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={title} className="h-full w-full object-contain" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
       ) : (
-        <span className="text-center text-xs text-slate-500">Photo unavailable</span>
+        <span className="text-center text-xs text-ink-muted">Photo unavailable</span>
       )}
     </div>
   );
@@ -66,9 +66,9 @@ export function AlternativesModal({
   return (
     <Modal open={Boolean(item)} onClose={onClose} title={`Lower-cost options for ${item?.name ?? ""}`} wide>
       {item && (
-        <p className="mb-4 text-sm text-slate-400">
+        <p className="mb-4 text-sm text-ink-muted">
           Your target price is{" "}
-          <span className="font-medium text-slate-200">
+          <span className="font-medium text-ink">
             <Money amount={item.targetPrice} currency={currencyCode} />
           </span>
           . The AI recommends; you choose.
@@ -76,7 +76,7 @@ export function AlternativesModal({
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 py-8 text-sm text-slate-400">
+        <div className="flex items-center gap-2 py-8 text-sm text-ink-muted">
           <Spinner /> Searching similar products…
         </div>
       )}
@@ -95,17 +95,17 @@ export function AlternativesModal({
             {data.alternatives.map((alt) => (
               <div
                 key={`${alt.title}-${alt.merchant}`}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 p-3"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-paper-line p-3"
               >
                 <ProductPhoto key={alt.imageUrl ?? alt.title} src={alt.imageUrl} title={alt.title} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{alt.title}</p>
                   <p className="mt-1 text-lg font-semibold">
                     <Money amount={alt.price} currency={alt.currency} />
-                    {data.source === "fallback" && <span className="ml-2 text-xs font-normal text-slate-400">estimated</span>}
+                    {data.source === "fallback" && <span className="ml-2 text-xs font-normal text-ink-muted">estimated</span>}
                   </p>
-                  <p className="text-xs text-slate-400">{alt.reason}</p>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="text-xs text-ink-muted">{alt.reason}</p>
+                  <p className="mt-0.5 text-xs text-ink-muted">
                     {alt.merchant} · {alt.availability}
                     {alt.savings > 0 && (
                       <span className="ml-2 font-medium text-emerald-400">
@@ -139,7 +139,7 @@ export function AlternativesModal({
               </div>
             ))}
             {data.alternatives.length === 0 && (
-              <p className="text-sm text-slate-400">No alternatives found for this item.</p>
+              <p className="text-sm text-ink-muted">No alternatives found for this item.</p>
             )}
           </div>
         </>

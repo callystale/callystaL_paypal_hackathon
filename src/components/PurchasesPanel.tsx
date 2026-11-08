@@ -149,7 +149,7 @@ export function PurchasesPanel({
   const visible = showAll ? periodPurchases : periodPurchases.slice(0, VISIBLE_LIMIT);
 
   return (
-    <section className="card">
+    <section id="purchases" tabIndex={-1} className="card notebook-page">
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">
@@ -157,7 +157,7 @@ export function PurchasesPanel({
           </p>
           <h2 className="text-lg font-semibold">Purchases</h2>
         </div>
-        <div className="flex flex-col items-end gap-1.5 text-sm text-slate-400">
+        <div className="flex flex-col items-end gap-1.5 text-sm text-ink-muted">
           <PeriodFilter
             value={period}
             onChange={onPeriodChange}
@@ -212,11 +212,11 @@ export function PurchasesPanel({
           {busy ? <Spinner /> : null} Record purchase
         </button>
       </div>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-ink-muted">
         Adding the store or merchant is optional — it just helps the AI categorize the purchase.
       </p>
 
-      <ul className="mt-4 divide-y divide-slate-800">
+      <ul className="mt-4 divide-y divide-paper-line">
         {periodPurchases.length === 0 && (
           <li className="pt-4">
             <EmptyState>
@@ -285,7 +285,7 @@ export function PurchasesPanel({
             <li key={p.id} className="flex items-center gap-3 py-2.5">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{p.description}</p>
-                <p className="truncate text-xs text-slate-400">
+                <p className="truncate text-xs text-ink-muted">
                   {new Date(p.occurredAt).toLocaleDateString()}
                   {p.merchant ? ` · ${p.merchant}` : ""}
                   {p.userCategorized
@@ -296,7 +296,7 @@ export function PurchasesPanel({
                 </p>
               </div>
               <select
-                className="max-w-[9rem] rounded-md border border-slate-700 px-2 py-1 text-xs"
+                className="max-w-[9rem] rounded-md border border-paper-line px-2 py-1 text-xs"
                 value={p.categoryId ?? ""}
                 onChange={(e) =>
                   run(() =>
