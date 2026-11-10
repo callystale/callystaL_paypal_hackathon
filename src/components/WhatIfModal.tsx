@@ -175,11 +175,15 @@ export function WhatIfModal({
             </p>
             {context && (
               <p className="mt-0.5 text-[11px] text-ink-muted">
-                Based on the current period: {context.period.label}
+                {data?.preRecorded ? "Based on the recorded sample period:" : "Based on the current period:"} {context.period.label}
               </p>
             )}
           </div>
 
+          {data?.preRecorded && <p className="mb-4 rounded-lg border border-cyan-400/30 bg-cyan-400/10 p-3 text-xs text-cyan-100" role="note">
+            <strong>Pre-recorded AI response · Live AI is off</strong><br />
+            Generated locally with {data.preRecorded.model} on {data.preRecorded.capturedAt.slice(0, 10)} for the original sample budget and item price. Changes made in this demo do not update this assessment.
+          </p>}
           {loading ? (
             <div className="flex items-center justify-center gap-3 py-12 text-sm text-ink-muted">
               <Spinner />

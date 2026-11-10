@@ -20,7 +20,9 @@ features requiring fresh AI inference explain their limits instead of claiming l
 
 Build with `npm run demo:build`; serve `demo-dist/` with a static web server. No `.env`,
 private database, or API credentials are bundled. `demo/snapshot.json` comes from an isolated,
-synthetic seeded database and contains saved plans, budget questions, and budget suggestions.
+synthetic seeded database and contains saved plans, budget questions, and budget suggestions. `demo/whatif.json` contains genuine pre-recorded
+AI buy-now assessments for all six original sample wishlist items. Their dialogs explicitly
+label the saved responses; edits do not regenerate these assessments.
 
 To refresh the fixtures, use a dedicated temporary database and a running local Ollama model:
 
@@ -28,6 +30,7 @@ To refresh the fixtures, use a dedicated temporary database and a running local 
 DATABASE_URL=file:/tmp/budgetpal-demo-ui.db npm run db:push
 DATABASE_URL=file:/tmp/budgetpal-demo-ui.db node --import tsx prisma/seed.ts
 DATABASE_URL=file:/tmp/budgetpal-demo-ui.db node --import tsx scripts/export-demo.ts
+DATABASE_URL=file:/tmp/budgetpal-demo-ui.db npm run demo:capture-whatif
 npm run demo:build
 ```
 

@@ -15,7 +15,8 @@
     "postinstall": "prisma generate",
     "demo:build": "node scripts/build-demo.mjs",
     "demo:capture": "node --import tsx scripts/export-demo.ts",
-    "demo:test": "node --import tsx --test demo/transport.test.ts"
+    "demo:test": "node --import tsx --test demo/transport.test.ts",
+    "demo:capture-whatif": "node --import tsx scripts/capture-whatif.ts"
   },
   "prisma": {
     "seed": "node --import tsx --env-file-if-exists=.env prisma/seed.ts"

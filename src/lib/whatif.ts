@@ -68,6 +68,7 @@ export interface WhatIfAssessment {
 }
 
 export interface WhatIfResponse {
+  preRecorded?: { model: string; capturedAt: string };
   context: WhatIfSnapshot;
   assessment: WhatIfAssessment;
 }

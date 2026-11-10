@@ -1,4 +1,6 @@
 import snapshot from "./snapshot.json";
+import savedWhatIf from "./whatif.json";
+import type { WhatIfResponse } from "../src/lib/whatif";
 import { api, type CategoryDTO, type GroupDetailDTO, type ItemDTO, type PurchaseDTO, type SettingsDTO } from "../src/lib/client";
 import { computeBalances, repaymentPlan, splitEqually, toCents, validateRepayment } from "../src/lib/group";
 import { repaymentExplanation } from "../src/lib/repayment-explanation";
@@ -58,6 +60,11 @@ async function request(method: string, raw: string, body: any = {}): Promise<any
     if (method === "DELETE") planVisible = false;
     if (method === "POST") planVisible = true;
     return { ...snapshot.plan, milestones: planVisible ? snapshot.plan.milestones.map((m: any) => { const currentItems = m.items.map((original: ItemDTO) => items.find(item => item.id === original.id)).filter(Boolean); return { ...m, items: currentItems, total: round(currentItems.reduce((sum: number, item: ItemDTO) => sum + item.effectivePrice, 0)) }; }) : [] };
+  }
+  if (path === "/api/what-if") {
+    const saved = (savedWhatIf as Record<string, WhatIfResponse>)[body.itemId];
+    if (!saved) throw new Error("No pre-recorded assessment exists for this item. Select an original sample wishlist item, or run the full app for live AI.");
+    return saved;
   }
   if (path === "/api/alternatives") return { source: "fallback", alternatives: [] };
   if (path === "/api/groups") {

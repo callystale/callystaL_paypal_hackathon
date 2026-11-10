@@ -35,3 +35,15 @@ test("actual group panel endpoints split cents and apply manual demo repayments"
   assert(!settled.group.repayments.some(r => r.fromMemberId === repayment.fromMemberId && r.toMemberId === repayment.toMemberId));
   await assert.rejects(() => api.post("/api/paypal/orders", {}), /disabled/);
 });
+
+test("buy-now assessments replay genuine saved AI output and reject uncaptured items", async () => {
+  const items = await api.get<Array<{id: string}>>("/api/items");
+  for (const item of items) {
+    const result = await api.post<import("../src/lib/whatif").WhatIfResponse>("/api/what-if", { itemId: item.id });
+    assert.equal(result.assessment.source, "ollama");
+    assert.equal(result.context.item.id, item.id);
+    assert.equal(result.preRecorded?.model, "llama3.2:3b");
+    assert(result.assessment.summary.length > 0);
+  }
+  await assert.rejects(() => api.post("/api/what-if", { itemId: "uncaptured" }), /No pre-recorded assessment/);
+});
