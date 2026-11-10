@@ -10,22 +10,29 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 
 ## Browser demo (GitHub Pages)
 
-The `demo/` app is a separate static walkthrough requiring no server, account, or local AI.
-It uses synthetic data and a genuine saved `llama3.2:3b` response from Ollama. A persistent
-banner explains that responses are preloaded and live AI is off. Visitors can record sample
-spending, select wishlist items, inspect the saved AI plan, and open **Split shared spending** for a side-by-side group panel. The panel supports
-adding equally split sample expenses, recalculating balances, demo settlements, and PayPal
-repayment walkthroughs. Changes stay in memory and reset on reload. AI advice remains
-fixed to the original sample inputs. Channel3 offers are explicitly illustrative estimates;
-PayPal checkout is a walkthrough and never creates or captures orders.
+The static demo renders the same `Dashboard` and `GroupsPanel` components as the full app,
+with a browser-only sample-data adapter. It preserves the actual layout, calendar, budget
+forms, purchase list, wishlist, milestones, and side-by-side group split. A persistent banner
+explains that live AI is off and suggestions are preloaded from a local Ollama run against
+the original sample inputs. Personal and group edits stay in memory and reset on reload.
+PayPal is disabled; no orders, captures, or payment links are created. Product search and
+features requiring fresh AI inference explain their limits instead of claiming live results.
 
-Build locally with `npm run demo:build`; serve the generated `demo-dist/` directory with a
-static web server. No `.env`, database, API credentials, or private records are bundled.
+Build with `npm run demo:build`; serve `demo-dist/` with a static web server. No `.env`,
+private database, or API credentials are bundled. `demo/snapshot.json` comes from an isolated,
+synthetic seeded database and contains saved plans, budget questions, and budget suggestions.
 
-To refresh the genuine model response, start Ollama with `llama3.2:3b` installed, then run
-`npm run demo:capture` followed by `npm run demo:build`. The capture script uses only
-`demo/scenario.json`, rejects heuristic fallback, and checks item coverage and milestone
-limits before replacing `demo/ai-response.json`.
+To refresh the fixtures, use a dedicated temporary database and a running local Ollama model:
+
+```bash
+DATABASE_URL=file:/tmp/budgetpal-demo-ui.db npm run db:push
+DATABASE_URL=file:/tmp/budgetpal-demo-ui.db node --import tsx prisma/seed.ts
+DATABASE_URL=file:/tmp/budgetpal-demo-ui.db node --import tsx scripts/export-demo.ts
+npm run demo:build
+```
+
+The exporter refuses other database paths. Run `node --import tsx --test demo/transport.test.ts`
+to verify that dashboard and group flows work without network API calls.
 
 The workflow `.github/workflows/demo-pages.yml` builds and publishes the demo on pushes to
 `main`. In the repository's **Settings → Pages**, select **GitHub Actions** as the publishing

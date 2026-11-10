@@ -1,0 +1,1327 @@
+{
+  "capturedAt": "2026-11-10T10:06:54.990Z",
+  "model": "llama3.2:3b",
+  "settings": {
+    "salary": 3000,
+    "goals": "Cover the essentials, build an emergency fund, and make room for a Japan trip with Mia and Nguyen.",
+    "monthStartDay": 20
+  },
+  "summary": {
+    "currency": "USD",
+    "periodStart": "2026-10-19T17:00:00.000Z",
+    "periodEnd": "2026-11-19T17:00:00.000Z",
+    "offset": 0,
+    "monthStartDay": 20,
+    "totals": {
+      "budget": 3000,
+      "spent": 2303,
+      "remaining": 697,
+      "allTimeSpent": 4467.81
+    },
+    "categories": [
+      {
+        "id": "cmwaizwgu0001c5h7pkfmiabq",
+        "name": "Rent",
+        "color": "#9e927e",
+        "budget": 900,
+        "spent": 900,
+        "remaining": 0,
+        "purchaseCount": 1
+      },
+      {
+        "id": "cmwaizwgv0002c5h7bezpl3s2",
+        "name": "Groceries",
+        "color": "#829877",
+        "budget": 300,
+        "spent": 174,
+        "remaining": 126,
+        "purchaseCount": 4
+      },
+      {
+        "id": "cmwaizwgw0003c5h70p6k1qff",
+        "name": "Dining",
+        "color": "#c69c80",
+        "budget": 150,
+        "spent": 108,
+        "remaining": 42,
+        "purchaseCount": 4
+      },
+      {
+        "id": "cmwaizwgw0004c5h75sqqfd05",
+        "name": "Transport",
+        "color": "#8daab1",
+        "budget": 100,
+        "spent": 52,
+        "remaining": 48,
+        "purchaseCount": 4
+      },
+      {
+        "id": "cmwaizwgx0005c5h7alg54l07",
+        "name": "Daily",
+        "color": "#bf919e",
+        "budget": 250,
+        "spent": 65,
+        "remaining": 185,
+        "purchaseCount": 4
+      },
+      {
+        "id": "cmwaizwgx0006c5h7yug92ln0",
+        "name": "Tech",
+        "color": "#a59aba",
+        "budget": 120,
+        "spent": 48,
+        "remaining": 72,
+        "purchaseCount": 2
+      },
+      {
+        "id": "cmwaizwgy0007c5h7iqa5vu20",
+        "name": "Saving",
+        "color": "#6f9382",
+        "budget": 600,
+        "spent": 600,
+        "remaining": 0,
+        "purchaseCount": 1
+      },
+      {
+        "id": "cmwaizwgz0008c5h7gedn3c79",
+        "name": "Tithe",
+        "color": "#c3b270",
+        "budget": 300,
+        "spent": 300,
+        "remaining": 0,
+        "purchaseCount": 1
+      },
+      {
+        "id": "cmwaizwh00009c5h7dhmtv70x",
+        "name": "Travel",
+        "color": "#899cad",
+        "budget": 280,
+        "spent": 56,
+        "remaining": 224,
+        "purchaseCount": 1
+      }
+    ],
+    "items": {
+      "total": 6,
+      "purchased": 0
+    }
+  },
+  "purchases": [
+    {
+      "id": "notebook-demo-purchase-2026-10-20-groceries-3",
+      "description": "Milk, eggs and household essentials",
+      "amount": 27.84,
+      "merchant": "Co.op Food",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-06T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-dining-3",
+      "description": "Weekend brunch",
+      "amount": 20.52,
+      "merchant": "Neighborhood cafe",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-06T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-transport-3",
+      "description": "Monthly parking pass",
+      "amount": 11.44,
+      "merchant": "Building parking",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-06T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-daily-3",
+      "description": "A birthday card and small gift",
+      "amount": 10.4,
+      "merchant": "Book street",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-06T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-tech-1",
+      "description": "Cloud storage subscription",
+      "amount": 26.4,
+      "merchant": "Cloud storage",
+      "categoryId": "cmwaizwgx0006c5h7yug92ln0",
+      "categoryName": "Tech",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-03T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-groceries-2",
+      "description": "Fruit and vegetables",
+      "amount": 38.28,
+      "merchant": "Neighborhood market",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-02T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-dining-2",
+      "description": "Lunch between meetings",
+      "amount": 27,
+      "merchant": "Pho corner",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-02T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-transport-2",
+      "description": "Evening ride home",
+      "amount": 9.36,
+      "merchant": "Grab",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-02T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-daily-2",
+      "description": "Monthly gym membership",
+      "amount": 20.8,
+      "merchant": "Neighborhood gym",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-11-02T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-rent-0",
+      "description": "Monthly apartment rent",
+      "amount": 900,
+      "merchant": "Apartment management",
+      "categoryId": "cmwaizwgu0001c5h7pkfmiabq",
+      "categoryName": "Rent",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-31T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-saving-0",
+      "description": "Monthly emergency fund contribution",
+      "amount": 600,
+      "merchant": "Savings transfer",
+      "categoryId": "cmwaizwgy0007c5h7iqa5vu20",
+      "categoryName": "Saving",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-31T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-tithe-0",
+      "description": "Monthly giving",
+      "amount": 300,
+      "merchant": "Community fund",
+      "categoryId": "cmwaizwgz0008c5h7gedn3c79",
+      "categoryName": "Tithe",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-31T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-travel-0",
+      "description": "Japan travel fund contribution",
+      "amount": 56,
+      "merchant": "Travel savings",
+      "categoryId": "cmwaizwh00009c5h7dhmtv70x",
+      "categoryName": "Travel",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-31T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-groceries-1",
+      "description": "Pantry staples and breakfast supplies",
+      "amount": 48.72,
+      "merchant": "WinMart",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-28T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-dining-1",
+      "description": "Morning coffee and a pastry",
+      "amount": 15.12,
+      "merchant": "The Coffee House",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-28T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-transport-1",
+      "description": "Fuel top-up",
+      "amount": 19.76,
+      "merchant": "Petrolimex",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-28T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-daily-1",
+      "description": "Laundry and household supplies",
+      "amount": 11.7,
+      "merchant": "Local laundry",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-28T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-tech-0",
+      "description": "USB-C cable replacement",
+      "amount": 21.6,
+      "merchant": "Electronics store",
+      "categoryId": "cmwaizwgx0006c5h7yug92ln0",
+      "categoryName": "Tech",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-27T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-groceries-0",
+      "description": "Weekly groceries and fresh produce",
+      "amount": 59.16,
+      "merchant": "Co.opmart",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-24T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-dining-0",
+      "description": "Friday dinner with friends",
+      "amount": 45.36,
+      "merchant": "Pizza 4P's",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-24T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-transport-0",
+      "description": "Commute to the office",
+      "amount": 11.44,
+      "merchant": "Grab",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-24T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-10-20-daily-0",
+      "description": "Internet and mobile plan",
+      "amount": 22.1,
+      "merchant": "FPT Telecom",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-24T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-groceries-3",
+      "description": "Milk, eggs and household essentials",
+      "amount": 26.17,
+      "merchant": "Co.op Food",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-13T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-dining-3",
+      "description": "Weekend brunch",
+      "amount": 19.29,
+      "merchant": "Neighborhood cafe",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-13T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-transport-3",
+      "description": "Monthly parking pass",
+      "amount": 10.75,
+      "merchant": "Building parking",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-13T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-daily-3",
+      "description": "A birthday card and small gift",
+      "amount": 9.78,
+      "merchant": "Book street",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-13T09:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-tech-1",
+      "description": "Cloud storage subscription",
+      "amount": 24.82,
+      "merchant": "Cloud storage",
+      "categoryId": "cmwaizwgx0006c5h7yug92ln0",
+      "categoryName": "Tech",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-09T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-groceries-2",
+      "description": "Fruit and vegetables",
+      "amount": 35.98,
+      "merchant": "Neighborhood market",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-07T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-dining-2",
+      "description": "Lunch between meetings",
+      "amount": 25.38,
+      "merchant": "Pho corner",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-07T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-transport-2",
+      "description": "Evening ride home",
+      "amount": 8.8,
+      "merchant": "Grab",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-07T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-daily-2",
+      "description": "Monthly gym membership",
+      "amount": 19.55,
+      "merchant": "Neighborhood gym",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-07T07:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-rent-0",
+      "description": "Monthly apartment rent",
+      "amount": 846,
+      "merchant": "Apartment management",
+      "categoryId": "cmwaizwgu0001c5h7pkfmiabq",
+      "categoryName": "Rent",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-05T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-saving-0",
+      "description": "Monthly emergency fund contribution",
+      "amount": 564,
+      "merchant": "Savings transfer",
+      "categoryId": "cmwaizwgy0007c5h7iqa5vu20",
+      "categoryName": "Saving",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-05T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-tithe-0",
+      "description": "Monthly giving",
+      "amount": 282,
+      "merchant": "Community fund",
+      "categoryId": "cmwaizwgz0008c5h7gedn3c79",
+      "categoryName": "Tithe",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-05T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-travel-0",
+      "description": "Japan travel fund contribution",
+      "amount": 52.64,
+      "merchant": "Travel savings",
+      "categoryId": "cmwaizwh00009c5h7dhmtv70x",
+      "categoryName": "Travel",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-05T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-groceries-1",
+      "description": "Pantry staples and breakfast supplies",
+      "amount": 45.8,
+      "merchant": "WinMart",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-02T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-dining-1",
+      "description": "Morning coffee and a pastry",
+      "amount": 14.21,
+      "merchant": "The Coffee House",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-02T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-transport-1",
+      "description": "Fuel top-up",
+      "amount": 18.57,
+      "merchant": "Petrolimex",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-02T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-daily-1",
+      "description": "Laundry and household supplies",
+      "amount": 11,
+      "merchant": "Local laundry",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-10-02T05:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-tech-0",
+      "description": "USB-C cable replacement",
+      "amount": 20.3,
+      "merchant": "Electronics store",
+      "categoryId": "cmwaizwgx0006c5h7yug92ln0",
+      "categoryName": "Tech",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-09-30T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-groceries-0",
+      "description": "Weekly groceries and fresh produce",
+      "amount": 55.61,
+      "merchant": "Co.opmart",
+      "categoryId": "cmwaizwgv0002c5h7bezpl3s2",
+      "categoryName": "Groceries",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-09-26T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-dining-0",
+      "description": "Friday dinner with friends",
+      "amount": 42.64,
+      "merchant": "Pizza 4P's",
+      "categoryId": "cmwaizwgw0003c5h70p6k1qff",
+      "categoryName": "Dining",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-09-26T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-transport-0",
+      "description": "Commute to the office",
+      "amount": 10.75,
+      "merchant": "Grab",
+      "categoryId": "cmwaizwgw0004c5h75sqqfd05",
+      "categoryName": "Transport",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-09-26T03:15:00.000Z"
+    },
+    {
+      "id": "notebook-demo-purchase-2026-9-20-daily-0",
+      "description": "Internet and mobile plan",
+      "amount": 20.77,
+      "merchant": "FPT Telecom",
+      "categoryId": "cmwaizwgx0005c5h7alg54l07",
+      "categoryName": "Daily",
+      "userCategorized": true,
+      "aiConfidence": null,
+      "occurredAt": "2026-09-26T03:15:00.000Z"
+    }
+  ],
+  "items": [
+    {
+      "id": "notebook-demo-item-shoes",
+      "name": "Everyday walking shoes",
+      "notes": "Comfortable enough for daily walks and travel. Sample target price.",
+      "targetPrice": 69.9,
+      "priority": "MEDIUM",
+      "targetDate": "2026-12-24T17:00:00.000Z",
+      "url": null,
+      "category": "Daily",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-everyday",
+      "effectivePrice": 69.9
+    },
+    {
+      "id": "notebook-demo-item-bag",
+      "name": "Lightweight weekend backpack",
+      "notes": "Carry-on size, laptop sleeve, and a water-bottle pocket. Sample target price.",
+      "targetPrice": 64.9,
+      "priority": "LOW",
+      "targetDate": "2027-01-13T17:00:00.000Z",
+      "url": null,
+      "category": "Travel",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-travel",
+      "effectivePrice": 64.9
+    },
+    {
+      "id": "notebook-demo-item-powerbank",
+      "name": "10,000 mAh USB-C power bank",
+      "notes": "A compact backup battery for long travel days. Sample target price.",
+      "targetPrice": 29.9,
+      "priority": "LOW",
+      "targetDate": "2027-01-18T17:00:00.000Z",
+      "url": null,
+      "category": "Tech",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-travel",
+      "effectivePrice": 29.9
+    },
+    {
+      "id": "notebook-demo-item-lamp",
+      "name": "Warm-light desk lamp",
+      "notes": "Dimmable, warm light for evening reading. Sample target price.",
+      "targetPrice": 34.5,
+      "priority": "MEDIUM",
+      "targetDate": "2026-11-30T17:00:00.000Z",
+      "url": null,
+      "category": "Daily",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-workday",
+      "effectivePrice": 34.5
+    },
+    {
+      "id": "notebook-demo-item-keyboard",
+      "name": "Compact wireless keyboard",
+      "notes": "Quiet keys, compact layout, and support for two devices. Sample target price.",
+      "targetPrice": 79,
+      "priority": "MEDIUM",
+      "targetDate": "2026-12-14T17:00:00.000Z",
+      "url": null,
+      "category": "Tech",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-everyday",
+      "effectivePrice": 79
+    },
+    {
+      "id": "notebook-demo-item-stand",
+      "name": "Adjustable aluminum laptop stand",
+      "notes": "A sturdy, foldable stand for a more comfortable workday. Sample target price.",
+      "targetPrice": 39.9,
+      "priority": "HIGH",
+      "targetDate": "2026-11-23T17:00:00.000Z",
+      "url": null,
+      "category": "Tech",
+      "purchased": false,
+      "alternativeName": null,
+      "alternativePrice": null,
+      "alternativeUrl": null,
+      "milestoneId": "notebook-demo-milestone-workday",
+      "effectivePrice": 39.9
+    }
+  ],
+  "groups": [
+    {
+      "id": "notebook-demo-group-dalat",
+      "name": "Da Lat weekend · sample",
+      "currency": "USD",
+      "createdAt": "2026-11-10T10:06:54.784Z",
+      "members": [
+        {
+          "id": "notebook-demo-group-dalat-member-0",
+          "displayName": "You",
+          "isSelf": true,
+          "paypalAddress": "sb-w3wwk53694373@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.784Z"
+        },
+        {
+          "id": "notebook-demo-group-dalat-member-1",
+          "displayName": "Mia",
+          "isSelf": false,
+          "paypalAddress": "sb-yxwlf53694377@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.785Z"
+        },
+        {
+          "id": "notebook-demo-group-dalat-member-2",
+          "displayName": "Nguyen",
+          "isSelf": false,
+          "paypalAddress": "sb-w2j0p53694380@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.785Z"
+        }
+      ],
+      "expenses": [
+        {
+          "id": "notebook-demo-group-dalat-expense-3",
+          "description": "Coffee, snacks and picnic supplies",
+          "amountCents": 3250,
+          "category": "Groceries",
+          "occurredAt": "2026-11-02T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dalat-member-1",
+          "payerName": "Mia",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dalat-expense-3-share-1",
+              "memberId": "notebook-demo-group-dalat-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 1083,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-3-share-2",
+              "memberId": "notebook-demo-group-dalat-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 1083,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-3-share-0",
+              "memberId": "notebook-demo-group-dalat-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 1084,
+              "purchaseId": null
+            }
+          ]
+        },
+        {
+          "id": "notebook-demo-group-dalat-expense-1",
+          "description": "Dinner after the night market",
+          "amountCents": 6840,
+          "category": "Dining",
+          "occurredAt": "2026-11-01T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dalat-member-1",
+          "payerName": "Mia",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dalat-expense-1-share-1",
+              "memberId": "notebook-demo-group-dalat-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 2280,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-1-share-2",
+              "memberId": "notebook-demo-group-dalat-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 2280,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-1-share-0",
+              "memberId": "notebook-demo-group-dalat-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 2280,
+              "purchaseId": null
+            }
+          ]
+        },
+        {
+          "id": "notebook-demo-group-dalat-expense-2",
+          "description": "Airport transfers and local rides",
+          "amountCents": 4650,
+          "category": "Transport",
+          "occurredAt": "2026-11-01T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dalat-member-2",
+          "payerName": "Nguyen",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dalat-expense-2-share-1",
+              "memberId": "notebook-demo-group-dalat-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 1550,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-2-share-2",
+              "memberId": "notebook-demo-group-dalat-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 1550,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-2-share-0",
+              "memberId": "notebook-demo-group-dalat-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 1550,
+              "purchaseId": null
+            }
+          ]
+        },
+        {
+          "id": "notebook-demo-group-dalat-expense-0",
+          "description": "Two nights at the hillside homestay",
+          "amountCents": 24000,
+          "category": "Travel",
+          "occurredAt": "2026-10-31T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dalat-member-0",
+          "payerName": "You",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dalat-expense-0-share-1",
+              "memberId": "notebook-demo-group-dalat-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 8000,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-0-share-2",
+              "memberId": "notebook-demo-group-dalat-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 8000,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dalat-expense-0-share-0",
+              "memberId": "notebook-demo-group-dalat-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 8000,
+              "purchaseId": null
+            }
+          ]
+        }
+      ],
+      "settlements": [
+        {
+          "id": "notebook-demo-group-dalat-manual-repayment",
+          "senderId": "notebook-demo-group-dalat-member-2",
+          "senderName": "Nguyen",
+          "recipientId": "notebook-demo-group-dalat-member-0",
+          "recipientName": "You",
+          "amountCents": 2000,
+          "status": "SETTLED",
+          "paypalOrderId": null,
+          "paymentReference": "manual",
+          "note": "Sample cash repayment for the trip. No PayPal payment was made.",
+          "settledAt": "2026-11-04T17:00:00.000Z",
+          "createdAt": "2026-11-10T10:06:54.788Z"
+        }
+      ],
+      "balances": [
+        {
+          "memberId": "notebook-demo-group-dalat-member-0",
+          "displayName": "You",
+          "isSelf": true,
+          "paidCents": 24000,
+          "shareCents": 12914,
+          "settledSentCents": 0,
+          "settledReceivedCents": 2000,
+          "directionAdjustmentCents": 0,
+          "netCents": 9086
+        },
+        {
+          "memberId": "notebook-demo-group-dalat-member-1",
+          "displayName": "Mia",
+          "isSelf": false,
+          "paidCents": 10090,
+          "shareCents": 12913,
+          "settledSentCents": 0,
+          "settledReceivedCents": 0,
+          "directionAdjustmentCents": 0,
+          "netCents": -2823
+        },
+        {
+          "memberId": "notebook-demo-group-dalat-member-2",
+          "displayName": "Nguyen",
+          "isSelf": false,
+          "paidCents": 4650,
+          "shareCents": 12913,
+          "settledSentCents": 2000,
+          "settledReceivedCents": 0,
+          "directionAdjustmentCents": 0,
+          "netCents": -6263
+        }
+      ],
+      "repayments": [
+        {
+          "fromMemberId": "notebook-demo-group-dalat-member-2",
+          "fromName": "Nguyen",
+          "toMemberId": "notebook-demo-group-dalat-member-0",
+          "toName": "You",
+          "amountCents": 6263
+        },
+        {
+          "fromMemberId": "notebook-demo-group-dalat-member-1",
+          "fromName": "Mia",
+          "toMemberId": "notebook-demo-group-dalat-member-0",
+          "toName": "You",
+          "amountCents": 2823
+        }
+      ],
+      "directionChanges": [],
+      "totals": {
+        "spentCents": 38740,
+        "yourNetCents": 9086
+      }
+    },
+    {
+      "id": "notebook-demo-group-dinner",
+      "name": "Sunday dinner club · sample",
+      "currency": "USD",
+      "createdAt": "2026-11-10T10:06:54.788Z",
+      "members": [
+        {
+          "id": "notebook-demo-group-dinner-member-0",
+          "displayName": "You",
+          "isSelf": true,
+          "paypalAddress": "sb-w3wwk53694373@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.788Z"
+        },
+        {
+          "id": "notebook-demo-group-dinner-member-1",
+          "displayName": "Mia",
+          "isSelf": false,
+          "paypalAddress": "sb-yxwlf53694377@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.789Z"
+        },
+        {
+          "id": "notebook-demo-group-dinner-member-2",
+          "displayName": "Nguyen",
+          "isSelf": false,
+          "paypalAddress": "sb-w2j0p53694380@personal.example.com",
+          "createdAt": "2026-11-10T10:06:54.789Z"
+        }
+      ],
+      "expenses": [
+        {
+          "id": "notebook-demo-group-dinner-expense-0",
+          "description": "Dinner for three at Pizza 4P's",
+          "amountCents": 8760,
+          "category": "Dining",
+          "occurredAt": "2026-11-05T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dinner-member-1",
+          "payerName": "Mia",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dinner-expense-0-share-1",
+              "memberId": "notebook-demo-group-dinner-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 2920,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-0-share-2",
+              "memberId": "notebook-demo-group-dinner-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 2920,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-0-share-0",
+              "memberId": "notebook-demo-group-dinner-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 2920,
+              "purchaseId": null
+            }
+          ]
+        },
+        {
+          "id": "notebook-demo-group-dinner-expense-1",
+          "description": "Coffee and dessert",
+          "amountCents": 2430,
+          "category": "Dining",
+          "occurredAt": "2026-11-05T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dinner-member-2",
+          "payerName": "Nguyen",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dinner-expense-1-share-1",
+              "memberId": "notebook-demo-group-dinner-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 810,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-1-share-2",
+              "memberId": "notebook-demo-group-dinner-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 810,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-1-share-0",
+              "memberId": "notebook-demo-group-dinner-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 810,
+              "purchaseId": null
+            }
+          ]
+        },
+        {
+          "id": "notebook-demo-group-dinner-expense-2",
+          "description": "Ride home together",
+          "amountCents": 1260,
+          "category": "Transport",
+          "occurredAt": "2026-11-05T17:00:00.000Z",
+          "payerId": "notebook-demo-group-dinner-member-0",
+          "payerName": "You",
+          "shares": [
+            {
+              "id": "notebook-demo-group-dinner-expense-2-share-1",
+              "memberId": "notebook-demo-group-dinner-member-1",
+              "memberName": "Mia",
+              "isSelf": false,
+              "amountCents": 420,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-2-share-2",
+              "memberId": "notebook-demo-group-dinner-member-2",
+              "memberName": "Nguyen",
+              "isSelf": false,
+              "amountCents": 420,
+              "purchaseId": null
+            },
+            {
+              "id": "notebook-demo-group-dinner-expense-2-share-0",
+              "memberId": "notebook-demo-group-dinner-member-0",
+              "memberName": "You",
+              "isSelf": true,
+              "amountCents": 420,
+              "purchaseId": null
+            }
+          ]
+        }
+      ],
+      "settlements": [],
+      "balances": [
+        {
+          "memberId": "notebook-demo-group-dinner-member-0",
+          "displayName": "You",
+          "isSelf": true,
+          "paidCents": 1260,
+          "shareCents": 4150,
+          "settledSentCents": 0,
+          "settledReceivedCents": 0,
+          "directionAdjustmentCents": 0,
+          "netCents": -2890
+        },
+        {
+          "memberId": "notebook-demo-group-dinner-member-1",
+          "displayName": "Mia",
+          "isSelf": false,
+          "paidCents": 8760,
+          "shareCents": 4150,
+          "settledSentCents": 0,
+          "settledReceivedCents": 0,
+          "directionAdjustmentCents": 0,
+          "netCents": 4610
+        },
+        {
+          "memberId": "notebook-demo-group-dinner-member-2",
+          "displayName": "Nguyen",
+          "isSelf": false,
+          "paidCents": 2430,
+          "shareCents": 4150,
+          "settledSentCents": 0,
+          "settledReceivedCents": 0,
+          "directionAdjustmentCents": 0,
+          "netCents": -1720
+        }
+      ],
+      "repayments": [
+        {
+          "fromMemberId": "notebook-demo-group-dinner-member-0",
+          "fromName": "You",
+          "toMemberId": "notebook-demo-group-dinner-member-1",
+          "toName": "Mia",
+          "amountCents": 2890
+        },
+        {
+          "fromMemberId": "notebook-demo-group-dinner-member-2",
+          "fromName": "Nguyen",
+          "toMemberId": "notebook-demo-group-dinner-member-1",
+          "toName": "Mia",
+          "amountCents": 1720
+        }
+      ],
+      "directionChanges": [],
+      "totals": {
+        "spentCents": 12450,
+        "yourNetCents": -2890
+      }
+    }
+  ],
+  "plan": {
+    "source": "ollama",
+    "monthlyBudget": 418,
+    "milestones": [
+      {
+        "id": "cmwaj02a80001v3wjvxsg5q8v",
+        "title": "Prioritize Tech and Daily essentials",
+        "rationale": "Ensure immediate needs are met before moving on to discretionary items.",
+        "sequence": 1,
+        "status": "PLANNED",
+        "total": 143.4,
+        "items": [
+          {
+            "id": "notebook-demo-item-keyboard",
+            "name": "Compact wireless keyboard",
+            "notes": "Quiet keys, compact layout, and support for two devices. Sample target price.",
+            "targetPrice": 79,
+            "priority": "MEDIUM",
+            "targetDate": "2026-12-14T17:00:00.000Z",
+            "url": null,
+            "category": "Tech",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02a80001v3wjvxsg5q8v",
+            "effectivePrice": 79
+          },
+          {
+            "id": "notebook-demo-item-lamp",
+            "name": "Warm-light desk lamp",
+            "notes": "Dimmable, warm light for evening reading. Sample target price.",
+            "targetPrice": 34.5,
+            "priority": "MEDIUM",
+            "targetDate": "2026-11-30T17:00:00.000Z",
+            "url": null,
+            "category": "Daily",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02a80001v3wjvxsg5q8v",
+            "effectivePrice": 34.5
+          },
+          {
+            "id": "notebook-demo-item-powerbank",
+            "name": "10,000 mAh USB-C power bank",
+            "notes": "A compact backup battery for long travel days. Sample target price.",
+            "targetPrice": 29.9,
+            "priority": "LOW",
+            "targetDate": "2027-01-18T17:00:00.000Z",
+            "url": null,
+            "category": "Tech",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02a80001v3wjvxsg5q8v",
+            "effectivePrice": 29.9
+          }
+        ]
+      },
+      {
+        "id": "cmwaj02a90002v3wjanbjzv25",
+        "title": "Travel and miscellaneous",
+        "rationale": "Prepare for travel and allocate funds for lower-priority items.",
+        "sequence": 2,
+        "status": "PLANNED",
+        "total": 64.9,
+        "items": [
+          {
+            "id": "notebook-demo-item-bag",
+            "name": "Lightweight weekend backpack",
+            "notes": "Carry-on size, laptop sleeve, and a water-bottle pocket. Sample target price.",
+            "targetPrice": 64.9,
+            "priority": "LOW",
+            "targetDate": "2027-01-13T17:00:00.000Z",
+            "url": null,
+            "category": "Travel",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02a90002v3wjanbjzv25",
+            "effectivePrice": 64.9
+          }
+        ]
+      },
+      {
+        "id": "cmwaj02aa0003v3wjvdpyu3kk",
+        "title": "Final stretch before 2026-11-23",
+        "rationale": "Allocate funds for the laptop stand before the target date.",
+        "sequence": 3,
+        "status": "PLANNED",
+        "total": 39.9,
+        "items": [
+          {
+            "id": "notebook-demo-item-stand",
+            "name": "Adjustable aluminum laptop stand",
+            "notes": "A sturdy, foldable stand for a more comfortable workday. Sample target price.",
+            "targetPrice": 39.9,
+            "priority": "HIGH",
+            "targetDate": "2026-11-23T17:00:00.000Z",
+            "url": null,
+            "category": "Tech",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02aa0003v3wjvdpyu3kk",
+            "effectivePrice": 39.9
+          }
+        ]
+      },
+      {
+        "id": "cmwaj02ab0004v3wjk20crdtv",
+        "title": "Last-minute adjustments",
+        "rationale": "Account for any remaining budget after previous milestones.",
+        "sequence": 4,
+        "status": "PLANNED",
+        "total": 69.9,
+        "items": [
+          {
+            "id": "notebook-demo-item-shoes",
+            "name": "Everyday walking shoes",
+            "notes": "Comfortable enough for daily walks and travel. Sample target price.",
+            "targetPrice": 69.9,
+            "priority": "MEDIUM",
+            "targetDate": "2026-12-24T17:00:00.000Z",
+            "url": null,
+            "category": "Daily",
+            "purchased": false,
+            "alternativeName": null,
+            "alternativePrice": null,
+            "alternativeUrl": null,
+            "milestoneId": "cmwaj02ab0004v3wjk20crdtv",
+            "effectivePrice": 69.9
+          }
+        ]
+      }
+    ]
+  },
+  "questions": {
+    "source": "ollama",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "What is the monthly rent for your current place?",
+        "hint": "A fixed expense to prioritize"
+      }
+    ]
+  },
+  "suggestion": {
+    "source": "ollama",
+    "allocations": [
+      {
+        "category": "Rent",
+        "amount": 900
+      },
+      {
+        "category": "Groceries",
+        "amount": 300
+      },
+      {
+        "category": "Dining",
+        "amount": 150
+      },
+      {
+        "category": "Transport",
+        "amount": 100
+      },
+      {
+        "category": "Daily",
+        "amount": 250
+      },
+      {
+        "category": "Tech",
+        "amount": 120
+      },
+      {
+        "category": "Saving",
+        "amount": 600
+      },
+      {
+        "category": "Tithe",
+        "amount": 300
+      },
+      {
+        "category": "Travel",
+        "amount": 280
+      }
+    ],
+    "explanation": "I've kept the current split as it is, as it covers the essentials and allows for some discretionary spending. This split should help you achieve your goals of building an emergency fund and saving for a Japan trip with Mia and Nguyen.",
+    "unallocated": 0,
+    "shortfall": 0
+  }
+}

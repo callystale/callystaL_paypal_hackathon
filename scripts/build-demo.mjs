@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 await mkdir("demo-dist", { recursive: true });
 await build({ entryPoints: ["demo/main.tsx"], bundle: true, outfile: "demo-dist/app.js", minify: true, jsx: "automatic", define: { "process.env.NODE_ENV": '"production"' }, loader: { ".css": "empty" } });
-execFileSync(process.execPath, ["node_modules/tailwindcss/lib/cli.js", "-i", "src/app/globals.css", "-o", "demo-dist/style.css", "--content", "./demo/**/*.tsx,./src/components/ui.tsx", "--minify"], { stdio: "inherit" });
+execFileSync(process.execPath, ["node_modules/tailwindcss/lib/cli.js", "-i", "src/app/globals.css", "-o", "demo-dist/style.css", "--content", "./demo/**/*.tsx,./src/components/**/*.tsx", "--minify"], { stdio: "inherit" });
 const version = createHash("sha256").update(await readFile("demo-dist/app.js")).update(await readFile("demo-dist/style.css")).digest("hex").slice(0, 12);
 await rename("demo-dist/app.js", `demo-dist/app-${version}.js`);
 await rename("demo-dist/style.css", `demo-dist/style-${version}.css`);

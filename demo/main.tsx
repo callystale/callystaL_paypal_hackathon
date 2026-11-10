@@ -1,57 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
-import { Money, Modal, Progress } from "../src/components/ui";
-import capture from "./ai-response.json";
-import { GroupSplit } from "./GroupSplit";
+import { Dashboard } from "../src/components/Dashboard";
+import { installDemoTransport } from "./transport";
+import snapshot from "./snapshot.json";
 import "../src/app/globals.css";
 
-const scenario = capture.scenario;
-const initialPurchases = scenario.categories.map((category, index) => ({ id: index, description: `${category.name} · sample spending`, amount: category.spent, category: category.name }));
-
-function Demo() {
-  const [purchases, setPurchases] = useState(initialPurchases);
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(scenario.categories[0].name);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [dialog, setDialog] = useState<"ai" | "checkout" | "alternatives" | null>(null);
-  const [groupsOpen, setGroupsOpen] = useState(false);
-  const [groupVersion, setGroupVersion] = useState(0);
-  const [view, setView] = useState("overview");
-  const [notice, setNotice] = useState("");
-  const budget = scenario.categories.reduce((sum, c) => sum + c.budget, 0);
-  const spent = purchases.reduce((sum, p) => sum + p.amount, 0);
-  const total = scenario.items.filter((item) => selected.includes(item.id)).reduce((sum, item) => sum + item.targetPrice, 0);
-  const reset = () => { setPurchases(initialPurchases); setSelected([]); setNotice(""); setDescription(""); setAmount(""); setView("overview"); setGroupsOpen(false); setGroupVersion(version => version + 1); };
-  return <>
-    <a className="skip-link" href="#demo-main">Skip to content</a>
-    <div className="border-b border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-center text-xs text-cyan-100" role="note">
-      <strong>DEMO MODE · Preloaded AI responses · Live AI is off</strong>
-      <span className="mt-1 block text-ink-soft">Responses were generated locally with {capture.model} and saved for demonstration. No live AI calls or payments. Changes last only in this tab.</span>
-    </div>
-    <main id="demo-main" className={`mx-auto px-4 py-8 sm:px-6 ${groupsOpen ? "max-w-[1600px]" : "max-w-6xl"}`}><div className={groupsOpen ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]" : ""}><div className="min-w-0">
-      <header className="mb-6 border-b border-paper-line pb-7">
-        <div className="mb-5 flex flex-wrap justify-between gap-3 text-[10px] font-semibold uppercase tracking-[.2em] text-ink-muted"><span>Your financial command center</span><span>Interactive product demo</span></div>
-        <div className="flex flex-wrap items-center justify-between gap-5"><div><h1 className="notebook-title"><span className="notebook-highlight">BudgetPal</span></h1><p className="mt-2 text-ink-soft">Clarity today. Possibilities tomorrow.</p></div><div className="flex flex-wrap gap-2"><button className="btn-primary" aria-expanded={groupsOpen} aria-controls="group-split" onClick={() => setGroupsOpen(open => !open)}>{groupsOpen ? "Close group split" : "Split shared spending"}</button><button className="btn-secondary" onClick={reset}>Reset demo</button></div></div>
-        <p className="mt-4 max-w-2xl text-sm text-ink-muted">Explore a sample budget, record spending, review a saved AI purchase plan, and preview how PayPal fits into the workflow.</p>
-        <div className="mt-5 flex flex-wrap gap-2 text-xs"><span className="badge bg-cyan-400/10 text-cyan-200">Ollama / {capture.model} · saved response</span><span className="badge bg-sky-500/10 text-sky-300">Channel3 · illustrative offers</span><span className="badge bg-indigo-500/20 text-indigo-300">PayPal Sandbox · walkthrough only</span></div>
-      </header>
-      <nav aria-label="Demo sections" className="notebook-nav">{["overview", "spending", "milestones", "shared expenses"].map((section, index) => <button key={section} className="notebook-tab capitalize" aria-current={view === section ? "location" : undefined} onClick={() => section === "shared expenses" ? setGroupsOpen(true) : setView(section)}><span className="text-[10px] opacity-60">0{index}</span>{section}</button>)}</nav>
-      {notice && <p role="status" className="mb-5 rounded-xl border border-cyan-400/30 bg-cyan-400/10 p-3 text-sm text-cyan-100">{notice}</p>}
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">{[["Monthly budget", budget], ["Spent", spent], ["Remaining", budget - spent], ["Wishlist", 380]].map(([label, value]) => <div className="notebook-stat" key={label}><p className="text-xs uppercase tracking-wide text-ink-muted">{label}</p><p className="mt-2 font-semibold"><Money amount={Number(value)} /></p></div>)}</div>
-      {view === "overview" && <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card"><header className="mb-5"><p className="mb-2 text-xs uppercase tracking-widest text-brand-400">01 / Budget overview</p><h2>A clearer view of your money</h2></header><div className="space-y-5">{scenario.categories.map(c => { const used = purchases.filter(p => p.category === c.name).reduce((sum, p) => sum + p.amount, 0); return <div key={c.name}><div className="mb-2 flex justify-between gap-3 text-sm"><span>{c.name}</span><span className="text-ink-soft"><Money amount={used} /> / <Money amount={c.budget} /></span></div><Progress value={used} max={c.budget} /></div>; })}</div></section>
-        <section className="card"><header className="mb-5"><p className="mb-2 text-xs uppercase tracking-widest text-brand-400">02 / Your next move</p><h2>Turn a wishlist into a plan</h2></header><p className="mb-5 text-sm text-ink-soft">The original sample has $400 remaining. BudgetPal uses 60% of that headroom, giving the model $240 per milestone.</p><div className="mb-5 rounded-xl border border-paper-line bg-paper-base p-4"><p className="text-xs uppercase tracking-widest text-ink-muted">Saved AI example</p><p className="mt-2 text-sm">{capture.plan.milestones[0].rationale}</p></div><button className="btn-primary" onClick={() => setView("milestones")}>Explore AI milestones →</button><p className="mt-4 text-xs text-ink-muted">The saved response uses the original sample inputs. Edits in this demo do not regenerate AI advice.</p></section>
-      </div>}
-      {view === "spending" && <div className="grid gap-6 lg:grid-cols-2"><section className="card"><header className="mb-5"><h2>Record a purchase</h2></header><form className="space-y-4" onSubmit={event => { event.preventDefault(); const value = Number(amount); if (!description.trim() || !Number.isFinite(value) || value <= 0) return; setPurchases([...purchases, { id: Date.now(), description: description.trim(), amount: Math.round(value * 100) / 100, category }]); setDescription(""); setAmount(""); setNotice("Sample purchase added. Budget totals updated in this tab."); }}><label className="label">Description<input className="input mt-2" required maxLength={120} value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Weekly groceries" /></label><label className="label">Amount (USD)<input className="input mt-2" type="number" min="0.01" max="100000" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} /></label><label className="label">Category<select className="input mt-2" value={category} onChange={e => setCategory(e.target.value)}>{scenario.categories.map(c => <option key={c.name}>{c.name}</option>)}</select></label><button className="btn-primary" type="submit">Add sample purchase</button></form></section><section className="card"><header className="mb-5"><h2>Spending activity</h2></header><div className="space-y-3">{purchases.map(p => <div className="flex justify-between gap-4 border-b border-paper-line pb-3 text-sm" key={p.id}><div><p>{p.description}</p><p className="text-xs text-ink-muted">{p.category}</p></div><Money amount={p.amount} /></div>)}</div></section></div>}
-      {view === "milestones" && <section className="card"><header className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><p className="mb-2 text-xs uppercase tracking-widest text-brand-400">Saved local AI output</p><h2>Your purchase roadmap</h2></div><button className="btn-secondary" onClick={() => setDialog("ai")}>View AI response details</button></header><p className="mb-6 text-sm text-ink-muted">Preloaded response from {capture.model}. Live AI is turned off for demonstration purposes. This plan stays fixed to the original sample budget.</p><div className="grid gap-4 sm:grid-cols-2">{capture.plan.milestones.map((milestone, index) => <div className="rounded-xl border border-paper-line bg-paper-base p-5" key={index}><p className="mb-2 text-xs uppercase tracking-widest text-cyan-300">Milestone 0{index + 1}</p><h3 className="mb-3 text-lg font-semibold">{milestone.title}</h3><p className="mb-4 text-sm text-ink-soft">{milestone.rationale}</p>{milestone.itemIds.map(id => { const item = scenario.items.find(i => i.id === id)!; return <label className="mb-3 flex items-center gap-3 text-sm" key={id}><input type="checkbox" checked={selected.includes(id)} onChange={e => setSelected(e.target.checked ? [...selected, id] : selected.filter(value => value !== id))} /><span className="flex-1">{item.name}</span><Money amount={item.targetPrice} /></label>; })}</div>)}</div><div className="mt-6 flex flex-wrap items-center gap-3"><button className="btn-primary" disabled={!selected.length} onClick={() => setDialog("checkout")}>Preview PayPal checkout · <Money amount={total} /></button><button className="btn-secondary" onClick={() => setDialog("alternatives")}>Explore cheaper alternatives</button></div></section>}
-      <footer className="mt-10 flex flex-wrap justify-between gap-3 border-t border-paper-line pt-5 text-xs text-ink-muted"><span>Synthetic sample data · No account or setup required</span><a className="text-cyan-300 underline" href="https://github.com/callystale/callystaL_paypal_hackathon" target="_blank" rel="noreferrer">View source & full Sandbox setup ↗</a></footer>
-    </div>{groupsOpen && <aside className="order-first min-w-0 lg:sticky lg:top-4 lg:order-last lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto"><GroupSplit key={groupVersion} onClose={() => setGroupsOpen(false)} /></aside>}</div></main>
-    <Modal open={dialog !== null} onClose={() => setDialog(null)} title={dialog === "ai" ? "Preloaded AI response" : dialog === "checkout" ? "PayPal Sandbox walkthrough" : "Find cheaper alternatives"}>
-      {dialog === "ai" && <><p className="mb-4 text-sm text-ink-soft">Generated locally using {capture.model}, captured {new Date(capture.capturedAt).toISOString().slice(0, 10)}. This is a saved response, not live inference.</p><pre className="max-h-80 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-paper-base p-4 text-xs text-cyan-100">{JSON.stringify(capture.plan, null, 2)}</pre></>}
-      {dialog === "checkout" && <><p className="mb-4 text-sm text-ink-soft">Selected sample items: <Money amount={total} />. This static demo does not create orders or collect payment information.</p><ol className="list-decimal space-y-3 pl-5 text-sm"><li>The server creates an order using PayPal Orders API v2.</li><li>You review and approve through the PayPal JavaScript SDK.</li><li>The server captures the Sandbox order.</li><li>Only successfully captured items are marked purchased.</li></ol><a className="btn-secondary mt-5" href="https://github.com/callystale/callystaL_paypal_hackathon#run-with-docker-judges">Run the full Sandbox integration ↗</a></>}
-      {dialog === "alternatives" && <><p className="mb-4 text-sm text-ink-soft">The full app uses Channel3 to search comparable products and local AI to explain differences. The offers below are illustrative estimates, not live Channel3 results or AI output.</p><div className="rounded-xl border border-paper-line p-4"><p className="font-semibold">Budget wireless headphones · $75</p><p className="mt-2 text-sm text-ink-muted">Illustrative saving: $45 compared with the $120 wishlist target. Check noise cancellation, battery life, and availability before choosing.</p></div></>}
-    </Modal>
-  </>;
-}
-createRoot(document.getElementById("root")!).render(<Demo />);
+installDemoTransport();
+createRoot(document.getElementById("root")!).render(<>
+  <a className="skip-link" href="#main-content">Skip to content</a>
+  <div className="border-b border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-center text-xs text-cyan-100" role="note">
+    <strong>DEMO MODE · Preloaded AI responses · Live AI is off</strong>
+    <span className="mt-1 block text-ink-soft">This is BudgetPal’s actual interface with sample data. AI responses were saved from a local {snapshot.model} run. Suggestions use the original sample inputs. No payments are processed; changes last only in this tab.</span>
+    <button className="mt-2 underline" onClick={() => window.location.reload()}>Reset demo data</button>
+  </div>
+  <Dashboard />
+</>);
