@@ -8,6 +8,33 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 
 ---
 
+## Browser demo (GitHub Pages)
+
+The `demo/` app is a separate static walkthrough requiring no server, account, or local AI.
+It uses synthetic data and a genuine saved `llama3.2:3b` response from Ollama. A persistent
+banner explains that responses are preloaded and live AI is off. Visitors can record sample
+spending, select wishlist items, inspect the saved AI plan, and explore shared-expense and
+PayPal checkout explanations. Changes stay in memory and reset on reload. AI advice remains
+fixed to the original sample inputs. Channel3 offers are explicitly illustrative estimates;
+PayPal checkout is a walkthrough and never creates or captures orders.
+
+Build locally with `npm run demo:build`; serve the generated `demo-dist/` directory with a
+static web server. No `.env`, database, API credentials, or private records are bundled.
+
+To refresh the genuine model response, start Ollama with `llama3.2:3b` installed, then run
+`npm run demo:capture` followed by `npm run demo:build`. The capture script uses only
+`demo/scenario.json`, rejects heuristic fallback, and checks item coverage and milestone
+limits before replacing `demo/ai-response.json`.
+
+The workflow `.github/workflows/demo-pages.yml` builds and publishes the demo on pushes to
+`main`. In the repository's **Settings → Pages**, select **GitHub Actions** as the publishing
+source. Once deployment succeeds, use the URL returned by the **github-pages** environment
+as the submission's **Try it out** link. Expected project URL:
+`https://callystale.github.io/callystaL_paypal_hackathon/` (verify deployment before submitting).
+The full Next.js app and real PayPal Sandbox integration still run using the instructions below.
+
+---
+
 ## Run with Docker (judges)
 
 Install [Docker Desktop](https://docs.docker.com/get-started/get-docker/) or Docker Engine with
