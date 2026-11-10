@@ -12,7 +12,7 @@ import { round2 } from "@/lib/money";
 import { PeriodFilter } from "./PeriodFilter";
 import { Alert, Money } from "./ui";
 
-const COLORS = ["#829877", "#9fafa1", "#c69c80", "#8daab1", "#bf919e", "#a59aba", "#c3b270"];
+const COLORS = ["#22d3ee", "#60a5fa", "#818cf8", "#38bdf8", "#c084fc", "#a5b4fc", "#2dd4bf"];
 const STARTER = ["Savings", "Everyday spending", "Investing"];
 
 interface DraftCategory {

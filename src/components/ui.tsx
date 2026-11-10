@@ -40,7 +40,7 @@ export function PriorityBadge({ priority }: { priority: string }) {
 export function Progress({
   value,
   max,
-  color = "#829877",
+  color = "#22d3ee",
 }: {
   value: number;
   max: number;
@@ -52,7 +52,7 @@ export function Progress({
     <div className="h-2 w-full overflow-hidden rounded-full bg-paper-inset">
       <div
         className="h-full rounded-full transition-all"
-        style={{ width: `${pct}%`, backgroundColor: over ? "#ae5b65" : color }}
+        style={{ width: `${pct}%`, backgroundColor: over ? "#fb7185" : color }}
       />
     </div>
   );
@@ -162,7 +162,7 @@ export function Modal({
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 ${
-        dim ? "bg-[#302b23]/35 backdrop-blur-[2px]" : "bg-transparent"
+        dim ? "bg-[#030712]/75 backdrop-blur-md" : "bg-transparent"
       }`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();

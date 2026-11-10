@@ -4,7 +4,7 @@ import type { CategoryDTO } from "@/lib/client";
 import { formatCurrency } from "@/lib/money";
 import { Money } from "./ui";
 
-const FALLBACK_COLORS = ["#829877", "#9fafa1", "#c69c80", "#8daab1", "#bf919e", "#a59aba", "#c3b270"];
+const FALLBACK_COLORS = ["#22d3ee", "#60a5fa", "#818cf8", "#38bdf8", "#c084fc", "#a5b4fc", "#2dd4bf"];
 
 function colorFor(category: CategoryDTO, index: number) {
   return category.color || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
@@ -106,11 +106,11 @@ function CategoryPieChart({
                 {categories[0].name}: {formatCurrency(categories[0].spent, currency)} (100%)
               </title>
             </circle>
-            <circle cx={CENTER} cy={CENTER} r={INNER} fill="#fffcf5" />
+            <circle cx={CENTER} cy={CENTER} r={INNER} fill="#101b2e" />
           </>
         ) : (
           arcs.map(({ category, d, color }) => (
-            <path key={category.id} d={d} fill={color} stroke="#fffcf5" strokeWidth="1.5">
+            <path key={category.id} d={d} fill={color} stroke="#101b2e" strokeWidth="1.5">
               <title>
                 {category.name}: {formatCurrency(category.spent, currency)} (
                 {percentLabel(category.spent, total)})

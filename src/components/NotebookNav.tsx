@@ -29,7 +29,7 @@ export function NotebookNav() {
     return () => { window.removeEventListener("scroll", update); cancelAnimationFrame(frame); };
   }, []);
   return (
-    <nav aria-label="Notebook sections" className="notebook-nav">
+    <nav aria-label="Dashboard sections" className="notebook-nav">
       {pages.map((page) => (
         <a key={page.id} href={`#${page.id}`} className="notebook-tab" aria-current={active === page.id ? "location" : undefined} onClick={() => setActive(page.id)}>
           <span className="text-[10px] font-normal opacity-70" aria-hidden="true">{page.number}</span>
