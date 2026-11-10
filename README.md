@@ -13,8 +13,9 @@ The AI recommends. You approve. Nothing is ever paid automatically.
 The `demo/` app is a separate static walkthrough requiring no server, account, or local AI.
 It uses synthetic data and a genuine saved `llama3.2:3b` response from Ollama. A persistent
 banner explains that responses are preloaded and live AI is off. Visitors can record sample
-spending, select wishlist items, inspect the saved AI plan, and explore shared-expense and
-PayPal checkout explanations. Changes stay in memory and reset on reload. AI advice remains
+spending, select wishlist items, inspect the saved AI plan, and open **Split shared spending** for a side-by-side group panel. The panel supports
+adding equally split sample expenses, recalculating balances, demo settlements, and PayPal
+repayment walkthroughs. Changes stay in memory and reset on reload. AI advice remains
 fixed to the original sample inputs. Channel3 offers are explicitly illustrative estimates;
 PayPal checkout is a walkthrough and never creates or captures orders.
 
