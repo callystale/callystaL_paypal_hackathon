@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, type MilestoneDTO, type PlanResponse, type StatusDTO, type SummaryDTO } from "@/lib/client";
+import { api, type ItemDTO, type MilestoneDTO, type PlanResponse, type StatusDTO, type SummaryDTO } from "@/lib/client";
 import type { SpendingAnalysisResponse } from "@/lib/spending";
 import { round2 } from "@/lib/money";
 import { PeriodFilter } from "./PeriodFilter";
@@ -10,6 +10,7 @@ import { EmptyState, Money, PriorityBadge, Spinner } from "./ui";
 
 export function PlanPanel({
   plan,
+  items = [],
   status,
   summary,
   run,
@@ -18,6 +19,7 @@ export function PlanPanel({
   onPeriodChange,
 }: {
   plan: PlanResponse | null;
+  items?: ItemDTO[];
   status: StatusDTO | null;
   summary: SummaryDTO | null;
   run: (fn: () => Promise<unknown>) => Promise<void>;
@@ -27,12 +29,31 @@ export function PlanPanel({
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<SpendingAnalysisResponse | null>(null);
   const currencyCode = summary?.currency ?? "USD";
   const milestones = plan?.milestones ?? [];
+  const unassigned = items.filter((item) => !item.milestoneId && !item.purchased);
+  const mutate = async (action: () => Promise<unknown>) => {
+    setEditing(true);
+    try { await run(action); } finally { setEditing(false); }
+  };
+  const moveItem = (itemId: string, milestoneId: string) => mutate(() => api.patch(`/api/items/${itemId}`, { milestoneId: milestoneId || null }));
+  const moveControl = (item: ItemDTO) => (
+    <label className="mt-2 block text-xs text-ink-muted">
+      Move to
+      <select className="input mt-1 w-full" aria-label={`Move ${item.name} to milestone`}
+        value={item.milestoneId ?? ""} disabled={editing || generating}
+        onChange={(event) => void moveItem(item.id, event.target.value)}>
+        <option value="">Unassigned wishlist</option>
+        {milestones.map((milestone) => <option key={milestone.id} value={milestone.id}>{milestone.sequence}. {milestone.title}</option>)}
+      </select>
+    </label>
+  );
 
   const unpaid = milestones.flatMap((m) => m.items).filter((item) => !item.purchased);
   const selected = unpaid.filter((item) => selectedIds.includes(item.id));
@@ -47,6 +68,7 @@ export function PlanPanel({
   const toggle = (id: string) => setSelectedIds((ids) => ids.includes(id) ? ids.filter((value) => value !== id) : [...ids, id]);
 
   const generate = async () => {
+    if (milestones.length && !window.confirm("Regenerate the plan? This replaces your current milestones and item arrangement.")) return;
     setGenerating(true);
     await run(() => api.post(`/api/plan?offset=${period}`));
     setGenerating(false);
@@ -111,22 +133,33 @@ export function PlanPanel({
             {analysisLoading ? <Spinner /> : <span aria-hidden="true">📊</span>}
             Analyze this month
           </button>
-          <button className="btn-secondary" onClick={generate} disabled={generating}>
+          <button className="btn-secondary" onClick={generate} disabled={generating || editing}>
             {generating ? <Spinner /> : null}
             {milestones.length ? "Regenerate" : "Generate plan"}
           </button>
           {milestones.length > 0 && (
-            <button className="btn-ghost" onClick={() => run(() => api.delete("/api/plan"))}>
+            <button className="btn-ghost" disabled={editing || generating} onClick={() => {
+              if (window.confirm("Clear all milestones? Your wishlist items will be kept.")) void mutate(() => api.delete("/api/plan"));
+            }}>
               Clear
             </button>
           )}
         </div>
       </header>
 
+      <form className="mb-4 flex flex-wrap gap-2" onSubmit={(event) => {
+        event.preventDefault();
+        if (newTitle.trim()) void mutate(async () => { await api.post("/api/milestones", { title: newTitle.trim() }); setNewTitle(""); });
+      }}>
+        <input className="input min-w-0 flex-1" aria-label="New milestone name" placeholder="Name your milestone" maxLength={80}
+          value={newTitle} onChange={(event) => setNewTitle(event.target.value)} disabled={editing || generating} />
+        <button className="btn-secondary" disabled={!newTitle.trim() || editing || generating}>Add milestone</button>
+      </form>
+      <p className="mb-4 text-xs text-ink-muted">Build your own stages or start with AI. Move items using the menu on each item. Deleting a milestone keeps its items in your wishlist.</p>
+
       {milestones.length === 0 ? (
         <EmptyState>
-          Add items to your wishlist, then generate a staged plan. The AI groups them into
-          milestones you can afford, respecting priority and target dates.
+          Create a milestone above and assign wishlist items, or generate a staged plan with AI.
         </EmptyState>
       ) : (
         <div>
@@ -155,6 +188,11 @@ export function PlanPanel({
                   <Money amount={m.total} currency={currencyCode} />
                 </span>
               </div>
+              <button className="btn-ghost mb-2 self-end text-xs" disabled={editing || generating}
+                onClick={() => { if (window.confirm(`Delete "${m.title}"? Its items will stay in your wishlist.`)) void mutate(() => api.delete(`/api/milestones/${m.id}`)); }}>
+                Delete milestone
+              </button>
+              {plan && m.total > plan.monthlyBudget && <p className="mb-2 text-xs text-amber-400">Above the suggested milestone budget. You can still arrange items here.</p>}
               {m.rationale && <p className="mb-3 text-xs text-ink-muted">{m.rationale}</p>}
               <ul className="mb-3 flex-1 space-y-1.5">
                 {m.items.map((item) => (
@@ -166,6 +204,7 @@ export function PlanPanel({
                         <span className="mt-1 flex items-center gap-2"><PriorityBadge priority={item.priority} /><Money amount={item.effectivePrice} currency={currencyCode} /></span>
                       </span>
                     </label>
+                    {moveControl(item)}
                     <button className="btn-ghost mt-2 w-full text-xs" disabled={item.purchased} onClick={() => checkout([item], m)}>{item.purchased ? "Paid ✓" : "Pay this item"}</button>
                   </li>
                 ))}
@@ -175,13 +214,24 @@ export function PlanPanel({
                 onClick={() => checkout(m.items.filter((item) => !item.purchased), m)}
                 disabled={m.items.every((item) => item.purchased)}
               >
-                {m.items.every((item) => item.purchased) ? "Paid ✓" : "Pay remaining in milestone"}
+                {m.items.length === 0 ? "No items yet" : m.items.every((item) => item.purchased) ? "Paid ✓" : "Pay remaining in milestone"}
               </button>
             </article>
           ))}
           </div>
         </div>
       )}
+
+      {unassigned.length > 0 && <div className="mt-5 rounded-xl border border-paper-line p-4">
+        <h3 className="mb-2 text-sm font-semibold">Unassigned wishlist items</h3>
+        <p className="mb-3 text-xs text-ink-muted">Choose a milestone for each item. Create a new milestone above whenever you need another stage.</p>
+        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {unassigned.map((item) => <li key={item.id} className="rounded-lg border border-paper-line p-3 text-sm">
+            <span className="font-medium">{item.alternativeName ?? item.name}</span>{" · "}<Money amount={item.effectivePrice} currency={currencyCode} />
+            {moveControl(item)}
+          </li>)}
+        </ul>
+      </div>}
 
       <SpendingAnalysisModal
         open={analysisOpen}

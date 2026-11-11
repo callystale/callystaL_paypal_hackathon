@@ -186,6 +186,8 @@ model ExpenseShare {
 }
 
 model Settlement {
+  /// Optional expense whose participant share this payment covers.
+  expenseId        String?
   id               String      @id @default(cuid())
   groupId          String
   group            Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)

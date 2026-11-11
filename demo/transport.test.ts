@@ -47,3 +47,15 @@ test("buy-now assessments replay genuine saved AI output and reject uncaptured i
   }
   await assert.rejects(() => api.post("/api/what-if", { itemId: "uncaptured" }), /No pre-recorded assessment/);
 });
+
+test("manual milestones support moving items and preserve wishlist on deletion", async () => {
+  const items = await api.get<Array<{ id: string }>>("/api/items");
+  const stage = await api.post<{ id: string }>("/api/milestones", { title: "My own stage" });
+  await api.patch(`/api/items/${items[0].id}`, { milestoneId: stage.id });
+  const plan = await api.get<{ milestones: Array<{ id: string; items: Array<{ id: string }> }> }>("/api/plan");
+  assert.equal(plan.milestones.find(m => m.id === stage.id)?.items[0].id, items[0].id);
+  assert.equal(plan.milestones.flatMap(m => m.items).filter(i => i.id === items[0].id).length, 1);
+  await api.delete(`/api/milestones/${stage.id}`);
+  const kept = await api.get<Array<{ id: string; milestoneId: string | null }>>("/api/items");
+  assert.equal(kept.find(i => i.id === items[0].id)?.milestoneId, null);
+});

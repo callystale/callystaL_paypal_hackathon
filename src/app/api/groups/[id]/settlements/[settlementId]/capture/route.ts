@@ -1,5 +1,5 @@
 import { memberPaypalEmailSchema } from "@/lib/group-member";
-import { fromCents, validateRepayment } from "@/lib/group";
+import { fromCents, remainingExpenseShare, validateRepayment } from "@/lib/group";
 import { groupDetailInclude } from "@/lib/group-data";
 import { toGroupDetailDTO } from "@/lib/dto";
 import { prisma } from "@/lib/prisma";
@@ -52,11 +52,24 @@ export async function POST(
         return "This payment request changed. Refresh the group before paying.";
       }
       if (current.status === "PENDING") {
+        if (current.expenseId && current.amountCents > remainingExpenseShare(toGroupDetailDTO(group), current.expenseId, current.senderId, true)) {
+          return "This expense share is already paid or being processed. Refresh the group.";
+        }
         const invalid = validateRepayment(toGroupDetailDTO(group).repayments, current.senderId, current.recipientId, current.amountCents);
         if (invalid) return invalid;
-      }
-      if (group.settlements.some((payment) => payment.id !== settlement.id && payment.status === "CAPTURING")) {
-        return "Another payment is being processed. Wait for confirmation before paying again.";
+        // Reserve in-flight transfers for validation only. They remain unpaid
+        // in the ledger until PayPal confirms completion. Independent debts can
+        // proceed, but another order cannot spend the same remaining debt.
+        const reserved = toGroupDetailDTO({
+          ...group,
+          settlements: group.settlements.map((payment) => ({
+            ...payment,
+            status: payment.status === "CAPTURING" ? "SETTLED" : payment.status,
+          })),
+        });
+        if (validateRepayment(reserved.repayments, current.senderId, current.recipientId, current.amountCents)) {
+          return "Another payment is already processing this debt. Wait for confirmation before paying it again.";
+        }
       }
       await tx.settlement.update({ where: { id: settlement.id }, data: { status: "CAPTURING" } });
       return null;

@@ -1,6 +1,32 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createOrder } from "./paypal";
+import { createOrder, getOrderForCheckout } from "./paypal";
+
+test("checkout distinguishes missing orders from transient PayPal failures", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalId = process.env.PAYPAL_CLIENT_ID;
+  const originalSecret = process.env.PAYPAL_CLIENT_SECRET;
+  process.env.PAYPAL_CLIENT_ID = "test-client";
+  process.env.PAYPAL_CLIENT_SECRET = "test-secret";
+  let response = Response.json({ id: "order", status: "CREATED" });
+  globalThis.fetch = async (url) => String(url).endsWith("/v1/oauth2/token")
+    ? Response.json({ access_token: "test-token", expires_in: 300 }) : response.clone();
+  try {
+    assert.deepEqual(await getOrderForCheckout("order"), { id: "order", status: "CREATED" });
+    response = Response.json({ details: [{ issue: "INVALID_RESOURCE_ID" }] }, { status: 404 });
+    assert.equal(await getOrderForCheckout("order"), null);
+    response = Response.json({ message: "Service unavailable" }, { status: 503 });
+    await assert.rejects(getOrderForCheckout("order"), /Service unavailable/);
+    response = Response.json({ message: "Not authorized" }, { status: 403 });
+    await assert.rejects(getOrderForCheckout("order"), /Not authorized/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalId === undefined) delete process.env.PAYPAL_CLIENT_ID;
+    else process.env.PAYPAL_CLIENT_ID = originalId;
+    if (originalSecret === undefined) delete process.env.PAYPAL_CLIENT_SECRET;
+    else process.env.PAYPAL_CLIENT_SECRET = originalSecret;
+  }
+});
 
 test("repayment orders direct funds to the specified recipient", async () => {
   const originalFetch = globalThis.fetch;

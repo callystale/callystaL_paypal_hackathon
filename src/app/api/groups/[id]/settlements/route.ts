@@ -32,7 +32,9 @@ export async function POST(
       if (!group) throw new Error("Group not found");
       const invalid = validateRepayment(toGroupDetailDTO(group).repayments, body.senderId, body.recipientId, body.amountCents);
       if (invalid) throw new Error(invalid);
-      if (group.settlements.some((payment) => payment.status === "CAPTURING")) {
+      // A QR request only records an unpaid link. Keep the capture lock for
+      // actions that change balances; checkout validates again before capture.
+      if (settled && group.settlements.some((payment) => payment.status === "CAPTURING")) {
         throw new Error("A payment is being processed. Wait for confirmation before recording another payment.");
       }
       const existing = group.settlements.find((payment) => payment.status === "PENDING" &&

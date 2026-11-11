@@ -11,7 +11,9 @@ let categories = structuredClone(snapshot.summary.categories) as CategoryDTO[];
 let purchases = structuredClone(snapshot.purchases) as PurchaseDTO[];
 let items = structuredClone(snapshot.items) as ItemDTO[];
 let groups = structuredClone(snapshot.groups) as GroupDetailDTO[];
-let planVisible = true;
+let milestones = structuredClone(snapshot.plan.milestones);
+// The exported plan is authoritative; its IDs may differ from item snapshots.
+items.forEach(item => { item.milestoneId = milestones.find(m => m.items.some(original => original.id === item.id))?.id ?? null; });
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -50,6 +52,7 @@ async function request(method: string, raw: string, body: any = {}): Promise<any
     return {};
   }
   if (path === "/api/items" || path.startsWith("/api/items/")) {
+    if (body.milestoneId && !milestones.some(m => m.id === body.milestoneId)) throw new Error("Milestone not found");
     const id = path.split("/")[3]; if (method === "GET") return items;
     if (method === "DELETE") items = items.filter(item => item.id !== id);
     else if (method === "POST") items.push({ id: uid(), name: body.name, notes: body.notes ?? null, targetPrice: body.targetPrice, priority: body.priority ?? "MEDIUM", targetDate: body.targetDate ?? null, category: body.category ?? null, url: body.url ?? null, purchased: false, alternativeName: null, alternativePrice: null, alternativeUrl: null, milestoneId: null, effectivePrice: body.targetPrice });
@@ -57,9 +60,33 @@ async function request(method: string, raw: string, body: any = {}): Promise<any
     return {};
   }
   if (path === "/api/plan") {
-    if (method === "DELETE") planVisible = false;
-    if (method === "POST") planVisible = true;
-    return { ...snapshot.plan, milestones: planVisible ? snapshot.plan.milestones.map((m: any) => { const currentItems = m.items.map((original: ItemDTO) => items.find(item => item.id === original.id)).filter(Boolean); return { ...m, items: currentItems, total: round(currentItems.reduce((sum: number, item: ItemDTO) => sum + item.effectivePrice, 0)) }; }) : [] };
+    if (method === "DELETE") { milestones = []; items.forEach(item => { item.milestoneId = null; }); }
+    if (method === "POST") {
+      milestones = structuredClone(snapshot.plan.milestones);
+      items.forEach(item => { item.milestoneId = item.purchased ? null : milestones.find(m => m.items.some(original => original.id === item.id))?.id ?? null; });
+    }
+    return { ...snapshot.plan, milestones: milestones.map(m => {
+      const currentItems = items.filter(item => item.milestoneId === m.id);
+      return { ...m, items: currentItems, status: currentItems.length && currentItems.every(item => item.purchased) ? "COMPLETED" : "PLANNED", total: round(currentItems.reduce((sum, item) => sum + item.effectivePrice, 0)) };
+    }) };
+  }
+  if (path === "/api/milestones" && method === "POST") {
+    const title = String(body.title ?? "").trim();
+    if (!title || title.length > 80) throw new Error("Enter a milestone name of up to 80 characters");
+    const milestone = { id: uid(), title, rationale: "", sequence: milestones.length + 1, status: "PLANNED", items: [], total: 0 };
+    milestones.push(milestone);
+    return milestone;
+  }
+  if (path.startsWith("/api/milestones/")) {
+    const id = path.split("/")[3];
+    const milestone = milestones.find(m => m.id === id);
+    if (!milestone) throw new Error("Milestone not found");
+    if (method === "DELETE") {
+      milestones = milestones.filter(m => m.id !== id);
+      milestones.forEach((m, index) => { m.sequence = index + 1; });
+      items.forEach(item => { if (item.milestoneId === id) item.milestoneId = null; });
+    } else if (method === "PATCH") milestone.title = body.title;
+    return {};
   }
   if (path === "/api/what-if") {
     const saved = (savedWhatIf as Record<string, WhatIfResponse>)[body.itemId];

@@ -27,14 +27,18 @@ export function SettlementCheckoutModal({
   onPaid: (result: CaptureSettlementResponse) => void;
 }) {
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [payExpense, setPayExpense] = useState(false);
   useEffect(() => {
+    setPayExpense(Boolean(repayment?.expenseId));
     setPaymentAmount(repayment ? fromCents(repayment.amountCents).toFixed(2) : "");
     setError(null);
     setDone(null);
     settlementIdRef.current = null;
   }, [repayment]);
+  const fullBalance = group.repayments.find((row) => row.fromMemberId === repayment?.fromMemberId && row.toMemberId === repayment?.toMemberId)?.amountCents ?? repayment?.amountCents ?? 0;
+  const maximumCents = payExpense ? repayment?.amountCents ?? 0 : fullBalance;
   const paymentCents = toCents(Number(paymentAmount));
-  const validAmount = Boolean(repayment && /^\d+(\.\d{1,2})?$/.test(paymentAmount) && paymentCents > 0 && paymentCents <= repayment.amountCents);
+  const validAmount = Boolean(repayment && /^\d+(\.\d{1,2})?$/.test(paymentAmount) && paymentCents > 0 && paymentCents <= maximumCents);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<CaptureSettlementResponse | null>(null);
@@ -87,7 +91,7 @@ export function SettlementCheckoutModal({
                 <dt>Amount</dt>
                 <dd>
                   <Money
-                    amount={fromCents(repayment.amountCents)}
+                    amount={fromCents(maximumCents)}
                     currency={group.currency}
                   />
                 </dd>
@@ -113,20 +117,35 @@ export function SettlementCheckoutModal({
                 Log in to the sender’s PayPal account to pay the recipient shown above. No shipping address is needed. The settlement is recorded only after PayPal confirms the capture.
               </p>
               <label className="block text-sm text-ink-soft">
+                {repayment.expenseId && (
+                  <span className="mb-3 block">
+                    <span className="mb-2 block">Expense: {repayment.expenseDescription}</span>
+                    <span className="flex gap-2">
+                      <button type="button" className={payExpense ? "btn-primary btn-sm" : "btn-secondary btn-sm"} disabled={busy}
+                        onClick={() => { setPayExpense(true); setPaymentAmount(fromCents(repayment.amountCents).toFixed(2)); setError(null); }}>
+                        This expense share
+                      </button>
+                      <button type="button" className={!payExpense ? "btn-primary btn-sm" : "btn-secondary btn-sm"} disabled={busy}
+                        onClick={() => { setPayExpense(false); setPaymentAmount(fromCents(fullBalance).toFixed(2)); setError(null); }}>
+                        Full balance to {repayment.toName}
+                      </button>
+                    </span>
+                  </span>
+                )}
                 Amount to pay ({group.currency})
                 <input className="input mt-1" type="number" min="0.01" step="0.01"
-                  max={fromCents(repayment.amountCents)} value={paymentAmount} disabled={busy}
+                  max={fromCents(maximumCents)} value={paymentAmount} disabled={busy}
                   onChange={(event) => setPaymentAmount(event.target.value)} />
               </label>
-              <p className="text-xs text-ink-muted">Pay the full amount or part of it. Any remaining debt stays visible.</p>
-              {!validAmount && <Alert>Enter an amount between 0.01 and {fromCents(repayment.amountCents).toFixed(2)}.</Alert>}
+              <p className="text-xs text-ink-muted">{payExpense ? "This payment covers this person’s share of the selected expense." : "This payment covers the balance owed to this person, across expenses."} You can also enter a smaller amount.</p>
+              {!validAmount && <Alert>Enter an amount between 0.01 and {fromCents(maximumCents).toFixed(2)}.</Alert>}
               <PayPalScriptProvider
                 options={{ clientId, currency: group.currency, intent: "capture" }}
               >
                 <PayPalButtons
                   style={{ layout: "vertical", shape: "rect" }}
                   disabled={busy || !validAmount}
-                  forceReRender={[paymentCents]}
+                  forceReRender={[paymentCents, payExpense, repayment.expenseId ?? ""]}
                   createOrder={async () => {
                     if (!validAmount) throw new Error("Enter a valid payment amount");
                     setError(null);
@@ -138,6 +157,7 @@ export function SettlementCheckoutModal({
                           senderId: repayment.fromMemberId,
                           recipientId: repayment.toMemberId,
                           amountCents: paymentCents,
+                          ...(payExpense && repayment.expenseId ? { expenseId: repayment.expenseId } : {}),
                         },
                       );
                       settlementIdRef.current = order.settlementId;

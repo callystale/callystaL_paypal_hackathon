@@ -183,6 +183,7 @@ export function Dashboard() {
           <div className="mt-6">
             <PlanPanel
               plan={plan}
+              items={items}
               status={status}
               summary={summary}
               run={run}

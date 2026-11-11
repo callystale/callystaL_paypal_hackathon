@@ -9,7 +9,7 @@ import type {
   StatusDTO,
   SuggestedRepayment,
 } from "@/lib/client";
-import { fromCents, settlementLocksExpenses, splitEqually, toCents } from "@/lib/group";
+import { fromCents, remainingExpenseShare, settlementLocksExpenses, splitEqually, toCents } from "@/lib/group";
 import { memberPaypalEmailSchema } from "@/lib/group-member";
 import { paypalPaymentLink, settlementReferenceLabel } from "@/lib/payment-link";
 import { DebtArrow, EmptyState, Modal, Money, Spinner } from "./ui";
@@ -931,7 +931,12 @@ export function GroupDetail({
                   </div>
 
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {expense.shares.map((share) => (
+                    {expense.shares.map((share) => {
+                      const debt = group.repayments.find((row) => row.fromMemberId === share.memberId && row.toMemberId === expense.payerId);
+                      const remaining = remainingExpenseShare(group, expense.id, share.memberId, true);
+                      const amountCents = Math.min(remaining, debt?.amountCents ?? 0);
+                      const payer = group.members.find((member) => member.id === expense.payerId);
+                      return (
                       <span
                         key={share.id}
                         className={`badge border ${
@@ -942,8 +947,15 @@ export function GroupDetail({
                       >
                         {share.memberName}:{" "}
                         <Cents cents={share.amountCents} currency={group.currency} />
+                        {share.memberId !== expense.payerId && amountCents > 0 && payer?.paypalAddress?.includes("@") && debt && (
+                          <button className="ml-2 underline" disabled={busy !== null}
+                            onClick={() => onPayWithPayPal({ ...debt, amountCents, expenseId: expense.id, expenseDescription: expense.description })}>
+                            Pay share · <Cents cents={amountCents} currency={group.currency} />
+                          </button>
+                        )}
+                        {share.memberId !== expense.payerId && remaining === 0 && <span className="ml-2 text-emerald-300">Paid</span>}
                       </span>
-                    ))}
+                    ); })}
                   </div>
 
                   {selfShare && (

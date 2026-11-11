@@ -156,6 +156,8 @@ export function computeBalances(
 }
 
 export interface SuggestedRepayment {
+  expenseId?: string;
+  expenseDescription?: string;
   fromMemberId: string;
   fromName: string;
   toMemberId: string;
@@ -312,6 +314,7 @@ export interface GroupExpenseDTO {
 }
 
 export interface SettlementDTO {
+  expenseId?: string | null;
   id: string;
   senderId: string;
   senderName: string;
@@ -324,6 +327,34 @@ export interface SettlementDTO {
   note: string | null;
   settledAt: string | null;
   createdAt: string;
+}
+
+/** Full-balance payments cover the oldest shares for that payer/recipient first. */
+export function remainingExpenseShare(
+  group: Pick<GroupDetailDTO, "expenses" | "settlements">,
+  expenseId: string,
+  senderId: string,
+  reserveProcessing = false,
+): number {
+  const expense = group.expenses.find((row) => row.id === expenseId);
+  if (!expense || expense.payerId === senderId) return 0;
+  const expenses = group.expenses.filter((row) => row.payerId === expense.payerId)
+    .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id.localeCompare(b.id));
+  const remaining = new Map(expenses.map((row) => [row.id, row.shares.find((share) => share.memberId === senderId)?.amountCents ?? 0]));
+  const payments = group.settlements.filter((row) => row.senderId === senderId && row.recipientId === expense.payerId &&
+    (row.status === "SETTLED" || (reserveProcessing && row.status === "CAPTURING")));
+  for (const payment of payments.filter((row) => row.expenseId)) {
+    const id = payment.expenseId!;
+    remaining.set(id, Math.max(0, (remaining.get(id) ?? 0) - payment.amountCents));
+  }
+  let general = payments.filter((row) => !row.expenseId).reduce((sum, row) => sum + row.amountCents, 0);
+  for (const row of expenses) {
+    const amount = remaining.get(row.id)!;
+    const covered = Math.min(amount, general);
+    remaining.set(row.id, amount - covered);
+    general -= covered;
+  }
+  return remaining.get(expenseId) ?? 0;
 }
 
 export interface GroupSummaryDTO {

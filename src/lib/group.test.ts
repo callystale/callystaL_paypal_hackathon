@@ -313,3 +313,30 @@ test("paid or stale repayments and amounts above the remaining balance are rejec
   assert.ok(validateRepayment([], "a", "b", 600));
   assert.ok(validateRepayment(plan, "b", "a", 600));
 });
+
+test("expense payments cover only the selected share; full payments cover oldest shares", async () => {
+  const { remainingExpenseShare } = await import("./group");
+  const expense = (id: string, date: string) => ({
+    id, description: id, amountCents: 2000, category: null, occurredAt: date,
+    payerId: "recipient", payerName: "Recipient",
+    shares: [{ id: `${id}-share`, memberId: "sender", memberName: "Sender", isSelf: false, amountCents: 1000, purchaseId: null }],
+  });
+  const payment = (expenseId: string | null, amountCents: number, status = "SETTLED") => ({
+    id: `${expenseId}-${status}`, expenseId, amountCents, status,
+    senderId: "sender", senderName: "Sender", recipientId: "recipient", recipientName: "Recipient",
+    paypalOrderId: null, paymentReference: null, note: null, settledAt: null, createdAt: "2026-01-01",
+  });
+  const group = { expenses: [expense("first", "2026-01-01"), expense("second", "2026-01-02")], settlements: [payment("second", 400)] };
+  assert.equal(remainingExpenseShare(group, "first", "sender"), 1000);
+  assert.equal(remainingExpenseShare(group, "second", "sender"), 600);
+  group.settlements.push(payment(null, 1200));
+  assert.equal(remainingExpenseShare(group, "first", "sender"), 0);
+  assert.equal(remainingExpenseShare(group, "second", "sender"), 400);
+  group.settlements.push(payment("second", 300, "CAPTURING"));
+  assert.equal(remainingExpenseShare(group, "second", "sender"), 400);
+  assert.equal(remainingExpenseShare(group, "second", "sender", true), 100);
+  group.settlements.push(payment("second", 100, "PENDING"));
+  assert.equal(remainingExpenseShare(group, "second", "sender", true), 100);
+  assert.equal(remainingExpenseShare(group, "first", "recipient"), 0);
+  assert.equal(remainingExpenseShare(group, "missing", "sender"), 0);
+});

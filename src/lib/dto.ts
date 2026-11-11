@@ -198,6 +198,7 @@ export function toGroupDetailDTO(group: GroupDetailPayload): GroupDetailDTO {
       amountCents: settlement.amountCents,
       status: settlement.status,
       paypalOrderId: settlement.paypalOrderId,
+      expenseId: settlement.expenseId,
       paymentReference: settlement.paymentReference,
       note: settlement.note,
       settledAt: settlement.settledAt ? settlement.settledAt.toISOString() : null,

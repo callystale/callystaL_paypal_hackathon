@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { ok, toErrorResponse } from "@/lib/api";
+import { bad, ok, toErrorResponse } from "@/lib/api";
 import { toItemDTO } from "@/lib/dto";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +32,9 @@ export async function PATCH(
 ) {
   try {
     const body = updateSchema.parse(await request.json());
+    if (body.milestoneId && !await prisma.milestone.findUnique({ where: { id: body.milestoneId } })) {
+      return bad("Milestone not found", 404);
+    }
 
     const data: Record<string, unknown> = {};
     if (body.name !== undefined) data.name = body.name.trim();
@@ -58,7 +61,18 @@ export async function PATCH(
       }
     }
 
-    const item = await prisma.desiredItem.update({ where: { id: params.id }, data });
+    const item = await prisma.$transaction(async (tx) => {
+      const previous = await tx.desiredItem.findUnique({ where: { id: params.id } });
+      const updated = await tx.desiredItem.update({ where: { id: params.id }, data });
+      if (body.milestoneId !== undefined) {
+        for (const id of new Set([previous?.milestoneId, updated.milestoneId].filter((id): id is string => Boolean(id)))) {
+          const total = await tx.desiredItem.count({ where: { milestoneId: id } });
+          const unpaid = await tx.desiredItem.count({ where: { milestoneId: id, purchased: false } });
+          await tx.milestone.update({ where: { id }, data: { status: total > 0 && unpaid === 0 ? "COMPLETED" : "PLANNED", rationale: null } });
+        }
+      }
+      return updated;
+    });
     return ok(toItemDTO(item));
   } catch (error) {
     return toErrorResponse(error);

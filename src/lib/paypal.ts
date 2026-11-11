@@ -72,6 +72,21 @@ export interface PayPalOrder {
   status: string;
 }
 
+/** Only replace an order when PayPal confirms that it no longer exists. */
+export async function getOrderForCheckout(orderId: string): Promise<PayPalOrder | null> {
+  const token = await getAccessToken();
+  const res = await fetch(`${apiBase()}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) {
+    const error = parsePayPalError(res.status, await res.text());
+    if (res.status === 404 && error.issue === "INVALID_RESOURCE_ID") return null;
+    throw error;
+  }
+  return (await res.json()) as PayPalOrder;
+}
+
 export async function createOrder(input: CreateOrderInput): Promise<PayPalOrder> {
   const token = await getAccessToken();
 
